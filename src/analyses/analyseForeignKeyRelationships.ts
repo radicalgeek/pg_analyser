@@ -2,7 +2,7 @@ import { Client } from 'pg';
 
 export async function checkForeignKeyAndRelationships(client: Client): Promise<string> {
 
-  let result = '';
+  let result = '<h2>Foreign Key and Relationship Analysis</h2>';
 
   const queryForeignKeys = `
     SELECT
@@ -38,6 +38,9 @@ export async function checkForeignKeyAndRelationships(client: Client): Promise<s
     if (columnTypes[0].column_data_type !== columnTypes[0].foreign_column_data_type) {
       result += `Data type mismatch in foreign key relationship: ${fk.table_name}.${fk.column_name} (${columnTypes[0].column_data_type}) -> ${fk.foreign_table_name}.${fk.foreign_column_name} (${columnTypes[0].foreign_column_data_type})` + '\n';
     }
+  }
+  if (result === '<h2>Foreign Key and Relationship Analysis</h2>') {
+    result += 'No Issues Found.';
   }
   return result;
 }

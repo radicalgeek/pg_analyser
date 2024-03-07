@@ -14,31 +14,36 @@ import { analyzeIndexUsageAndTypes } from './analyses/analyseIndexUsage';
 const app = express();
 const port = 3000; 
 
-app.use(bodyParser.json());
-app.use(express.static('public')); 
 
+app.use(bodyParser.json());
+app.use(express.static('src/public')); 
 
 app.get('/analyze', async (req: any, res: { send: (arg0: string) => void; }) => {
-    await client.connect();
+    
     let analysisResults = '';
   
     try {
+      await client.connect().catch(error => {
+        console.log("Connection attempt error:", error.message);
+    });
+
+
       const resTables = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
       const tables = resTables.rows;
       
       // Perform analysis on each table
       for (const { table_name } of tables) {
+        analysisResults += `<h1>Analysis for table: ${table_name}</h1>`;
         analysisResults += await analyzeTableColumns(table_name) + '\n';
       }
       // Perform analysis on the database
-      analysisResults += await checkForeignKeyAndRelationships(client) + '\n';
+      //analysisResults += await checkForeignKeyAndRelationships(client) + '\n';
       analysisResults += await analyzeIndexUsageAndTypes(client) + '\n';
     } catch (error) {
       console.error(`Database analysis failed: ${error}`);
       analysisResults += `Database analysis failed: ${error}`;
-    } finally {
-      await client.end();
-    }
+      res.send(`<pre>${analysisResults}</pre>`);
+    } 
   
     res.send(`<pre>${analysisResults}</pre>`); // Send results formatted as preformatted text
   });

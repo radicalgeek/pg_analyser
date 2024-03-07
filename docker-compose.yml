@@ -5,6 +5,7 @@ services:
     build: .
     ports:
       - "3000:3000"
+      - "9229:9229"
     environment:
       PGUSER: ${PGUSER}
       PGPASSWORD: ${PGPASSWORD}
@@ -24,6 +25,7 @@ services:
       POSTGRES_PASSWORD: ${PGPASSWORD}
       POSTGRES_DB: ${PGDATABASE}
     volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql  # Mount the SQL script
       - postgres_data:/var/lib/postgresql/data
 
 volumes:

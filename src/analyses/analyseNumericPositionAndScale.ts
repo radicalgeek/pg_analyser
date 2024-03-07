@@ -2,7 +2,7 @@ import { Client } from 'pg';
 
 export async function analyzeNumericPrecisionAndScale(client: Client, table: string): Promise<string> {
 
-  let result = '';
+  let result = '<h2>Numeric Precision and Scale Analysis</h2>';
 
   const query = `
     SELECT column_name, numeric_precision, numeric_scale
@@ -15,10 +15,16 @@ export async function analyzeNumericPrecisionAndScale(client: Client, table: str
   for (const row of rows) {
     const { column_name, numeric_precision, numeric_scale } = row;
     const dataQuery = `
-      SELECT MAX(LENGTH((regexp_matches(CAST("${column_name}" AS TEXT), '^-?\\d*'))[1])) as max_precision,
-             MAX(LENGTH(SUBSTRING(CAST("${column_name}" AS TEXT) FROM '\\.\\d+$'))) - 1 as max_scale
+    SELECT 
+      MAX(precision_length) AS max_precision,
+      MAX(scale_length) AS max_scaleß
+    FROM (
+      SELECT
+        LENGTH((regexp_matches(CAST("${column_name}" AS TEXT), '^-?\\d*'))[1]) AS precision_length,
+        LENGTH(SUBSTRING(CAST("${column_name}" AS TEXT) FROM '\\.\\d+$')) - 1 AS scale_length
       FROM "${table}"
-      WHERE "${column_name}" IS NOT NULL`;
+      WHERE "${column_name}" IS NOT NULL
+    ) AS subquery`;
 
     const dataRes = await client.query(dataQuery);
     const maxPrecision = dataRes.rows[0] ? dataRes.rows[0].max_precision : null;
@@ -31,6 +37,9 @@ export async function analyzeNumericPrecisionAndScale(client: Client, table: str
     if (maxScale !== null && numeric_scale > maxScale) {
       result += `Column '${column_name}' in table '${table}' has defined numeric scale of ${numeric_scale} which could potentially be reduced to ${maxScale}.` + '\n';
     }
+  }
+  if (result === '<h2>Numeric Precision and Scale Analysis</h2>') {
+    result += 'No Issues Found.';
   }
   return result;
 }

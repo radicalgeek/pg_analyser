@@ -2,7 +2,7 @@ import { Client } from 'pg';
 
 export async function analyzeUnusedOrRarelyUsedColumns(client: Client, table: string): Promise<string> {
 
-  let result = '';
+  let result = '<h2>Unused or Rarely Used Columns Analysis</h2>';
 
   const queryColumns = `
     SELECT column_name
@@ -32,6 +32,9 @@ export async function analyzeUnusedOrRarelyUsedColumns(client: Client, table: st
     if (unique_values === 1 && total_rows > 1) {
       result +=`Column '${column}' in table '${table}' might be overusing a default value (only 1 unique value across non-null entries).` + '\n';
     }
+  }
+  if (result === '<h2>Unused or Rarely Used Columns Analysis</h2>') {
+    result += 'No Issues Found.';
   }
   return result;
 }

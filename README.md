@@ -10,13 +10,11 @@
 
 2. **Index Usage and Types**: Evaluates the usage of existing indexes to identify unused or rarely used indexes that may consume unnecessary resources, and suggests more efficient index types where applicable.
 
-3. **Foreign Key and Relationship Checks**: Ensures consistency in data types across foreign key relationships and identifies potential referential integrity issues.
+3. **Unused or Rarely Used Columns**: Detects columns that have a high percentage of null values or a lack of diversity in their data, which might indicate that the column is underutilized.
 
-4. **Unused or Rarely Used Columns**: Detects columns that have a high percentage of null values or a lack of diversity in their data, which might indicate that the column is underutilized.
+4. **Temporal Data Type Appropriateness**: Reviews columns with temporal data to ensure that the most appropriate data type is used, considering the need for time zone awareness and precision.
 
-5. **Temporal Data Type Appropriateness**: Reviews columns with temporal data to ensure that the most appropriate data type is used, considering the need for time zone awareness and precision.
-
-6. **Consistent Use of Enums**: Identifies columns that could benefit from being converted to enum types, based on the repetition of a limited set of string values.
+5. **Consistent Use of Enums**: Identifies columns that could benefit from being converted to enum types, based on the repetition of a limited set of string values.
 
 ## Getting Started
 
@@ -33,13 +31,17 @@
 git clone https://github.com/yourusername/pg_analyser.git
 cd pg_analyser
 ```
+2. copy the .env.template file to .env and adjust as needed
+```bash
+cp .env.template .env
+```
 
-2. start the application and a PostgreSQL instance using Docker Compose
+3. start the application and a PostgreSQL instance using Docker Compose
 ```bash
 docker-compose up --build
 ```
 
-3. Access the service at http://localhost:3000
+4. Access the service at http://localhost:3000
 
 ### Deployment
 

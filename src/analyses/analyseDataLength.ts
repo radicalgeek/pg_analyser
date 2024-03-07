@@ -2,7 +2,7 @@ import { Client } from 'pg';
 
 export async function analyzeTextAndBinaryDataLength(client: Client, table: string): Promise<string> {
   
-  let result = '';
+  let result = '<h2>Text and Binary Data Length Analysis</h2>';
 
   const query = `
     SELECT column_name, data_type, character_maximum_length
@@ -27,6 +27,8 @@ export async function analyzeTextAndBinaryDataLength(client: Client, table: stri
       result += `Column '${column_name}' in table '${table}' of type '${data_type}' with defined length ${character_maximum_length} could potentially be reduced to ${maxLengthInRows}.` + '\n';
     }
   }
-
+  if (result === '<h2>Text and Binary Data Length Analysis</h2>') {
+    result += 'No Issues Found.';
+  }
   return result;
 }

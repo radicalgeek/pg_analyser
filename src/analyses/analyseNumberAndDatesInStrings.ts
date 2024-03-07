@@ -6,7 +6,7 @@ const isDate = (value: string): boolean => !isNaN(Date.parse(value));
 
 export const analyzeNumberInStringColumns = async (client: Client, table: string): Promise<string> => {
 
-  let result = '';
+  let result = '<h2>Number and Date Analysis</h2>';
 
   const queryColumns = `
     SELECT column_name
@@ -27,6 +27,9 @@ export const analyzeNumberInStringColumns = async (client: Client, table: string
     if (allNumbers || allDates) {
       result += `Column '${column_name}' in table '${table}' might be better as a numeric or date type.` + '\n';
     }
+  }
+  if (result === '<h2>Number and Date Analysis</h2>') {
+    result += 'No Issues Found.';
   }
   return result;
 };

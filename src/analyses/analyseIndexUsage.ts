@@ -2,7 +2,7 @@ import { Client } from 'pg';
 
 export async function analyzeIndexUsageAndTypes(client: Client): Promise<string> {
 
-  let result = '';
+  let result = '<h2>Index Usage and Types Analysis</h2>';
   const unusedIndexThreshold = parseInt(process.env.UNUSED_INDEX_THRESHOLD || '50');
 
   //check for unused indexes
@@ -11,8 +11,11 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
            idx.indexrelid::regclass AS index_name,
            stat.idx_scan as index_scans
     FROM pg_index idx
+    JOIN pg_class cls ON cls.oid = idx.indrelid
+    JOIN pg_namespace ns ON ns.oid = cls.relnamespace
     JOIN pg_stat_user_indexes stat ON idx.indexrelid = stat.indexrelid
-    WHERE stat.idx_scan < ${unusedIndexThreshold};`; 
+    WHERE stat.idx_scan < ${unusedIndexThreshold}
+    AND ns.nspname NOT IN ('pg_catalog', 'information_schema');`; 
 
   const resUnusedIndexes = await client.query(queryUnusedIndexes);
   for (const row of resUnusedIndexes.rows) {
@@ -36,9 +39,12 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
 
   // Suggest GIN indexes for columns of type 'text[]' or involved in full-text search
   const queryPotentialGINIndexes = `
-    SELECT table_name, column_name
-    FROM information_schema.columns
-    WHERE data_type = 'text[]' OR column_name LIKE '%_text';`;
+    SELECT c.table_name, c.column_name
+    FROM information_schema.columns c
+    JOIN information_schema.tables t ON c.table_name = t.table_name AND c.table_schema = t.table_schema
+    WHERE (c.data_type = 'text[]' OR c.column_name LIKE '%_text')
+    AND t.table_schema NOT IN ('pg_catalog', 'information_schema')
+    AND t.table_type = 'BASE TABLE';`;
 
   const resPotentialGIN = await client.query(queryPotentialGINIndexes);
   for (const row of resPotentialGIN.rows) {
@@ -47,11 +53,16 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
 
   // Suggest BRIN indexes for large tables with monotonically increasing columns
     const queryBRINCandidateColumns = `
-      SELECT table_name, column_name
-      FROM information_schema.columns
-      WHERE data_type IN ('timestamp without time zone', 'timestamp with time zone', 'date', 'integer')
-        AND table_name NOT IN
-          (SELECT DISTINCT indrelid::regclass::text FROM pg_index JOIN pg_class ON pg_class.oid = pg_index.indexrelid WHERE pg_class.relkind = 'i');
+    SELECT table_name, column_name
+    FROM information_schema.columns
+    WHERE data_type IN ('timestamp without time zone', 'timestamp with time zone', 'date', 'integer')
+      AND table_schema NOT IN ('pg_catalog', 'information_schema')
+      AND table_name NOT IN (
+        SELECT DISTINCT indrelid::regclass::text 
+        FROM pg_index 
+        JOIN pg_class ON pg_class.oid = pg_index.indexrelid 
+        WHERE pg_class.relkind = 'i'
+      );
     `;
   
     const resPotentialBRIN  = await client.query(queryBRINCandidateColumns);
@@ -87,6 +98,9 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
   const resForeignKeys = await client.query(queryFKColumnsWithoutIndex);
   for (const row of resForeignKeys.rows) {
     result += `Foreign key column '${row.column_name}' on table '${row.table_schema}.${row.table_name}' is not indexed. Consider adding an index to improve performance.` + '\n';
+  }
+  if (result === '<h2>Index Usage and Types Analysis</h2>') {
+    result += 'No Issues Found.';
   }
   return result;
 }

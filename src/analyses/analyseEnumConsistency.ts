@@ -2,7 +2,7 @@ import { Client } from 'pg';
 
 export async function analyzePotentialEnumColumns(client: Client, table: string): Promise<string> {
 
-  let result = '';
+  let result = '<h2>Potential Enum Columns Analysis</h2>';
 
   const queryColumns = `
     SELECT column_name
@@ -27,6 +27,9 @@ export async function analyzePotentialEnumColumns(client: Client, table: string)
     if (distinctValuesCount > 0 && distinctValuesCount <= enumThreshold) {
       result += `Column '${column}' in table '${table}' has ${distinctValuesCount} distinct values and might be better represented as an enum type.` + '\n';
     }
+  }
+  if (result === '<h2>Potential Enum Columns Analysis</h2>') {
+    result += 'No Issues Found.';
   }
   return result;
 }

@@ -2,7 +2,7 @@ import { Client } from 'pg';
 
 export async function analyzeTemporalDataTypeAppropriateness(client: Client, table: string): Promise<string> {
 
-  let result = '';
+  let result = '<h2>Temporal Data Type Appropriateness Analysis</h2>';
 
   const queryColumns = `
     SELECT column_name, data_type
@@ -18,6 +18,9 @@ export async function analyzeTemporalDataTypeAppropriateness(client: Client, tab
     if (data_type.includes('without time zone')) {
       result += `Column '${column_name}' in table '${table}' uses '${data_type}'. Consider if 'with time zone' might be more appropriate for time zone awareness.` + '\n';
     }
+  }
+  if (result === '<h2>Temporal Data Type Appropriateness Analysis</h2>') {
+    result += 'No Issues Found.';
   }
   return result;
 }
