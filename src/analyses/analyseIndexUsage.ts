@@ -1,7 +1,8 @@
 import { Client } from 'pg';
 
-export async function analyzeIndexUsageAndTypes(client: Client): Promise<void> {
+export async function analyzeIndexUsageAndTypes(client: Client): Promise<string> {
 
+  let result = '';
   const unusedIndexThreshold = parseInt(process.env.UNUSED_INDEX_THRESHOLD || '50');
 
   //check for unused indexes
@@ -15,7 +16,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<void> {
 
   const resUnusedIndexes = await client.query(queryUnusedIndexes);
   for (const row of resUnusedIndexes.rows) {
-    console.log(`Index '${row.index_name}' on table '${row.table_name}' has very low usage (${row.index_scans} scans). Consider if it's necessary.`);
+    result += `Index '${row.index_name}' on table '${row.table_name}' has very low usage (${row.index_scans} scans). Consider if it's necessary.` + '\n';
   }
 
   //check for duplicate indexes
@@ -30,7 +31,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<void> {
 
     const resDuplicateIndexes = await client.query(queryDuplicateIndexes);
     for (const row of resDuplicateIndexes.rows) {
-      console.log(`Duplicate indexes found on table ${row.table}: ${row.duplicate_indexes.join(', ')}. Consider removing redundant indexes.`);
+      result += `Duplicate indexes found on table ${row.table}: ${row.duplicate_indexes.join(', ')}. Consider removing redundant indexes.` + '\n';
     }
 
   // Suggest GIN indexes for columns of type 'text[]' or involved in full-text search
@@ -41,7 +42,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<void> {
 
   const resPotentialGIN = await client.query(queryPotentialGINIndexes);
   for (const row of resPotentialGIN.rows) {
-    console.log(`Column '${row.column_name}' on table '${row.table_name}' might benefit from a GIN index for improved search performance.`);
+    result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a GIN index for improved search performance.` + '\n';
   }
 
   // Suggest BRIN indexes for large tables with monotonically increasing columns
@@ -55,7 +56,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<void> {
   
     const resPotentialBRIN  = await client.query(queryBRINCandidateColumns);
     for (const row of resPotentialBRIN.rows) {
-      console.log(`Column '${row.column_name}' on table '${row.table_name}' might benefit from a BRIN index for faster queries on large, naturally ordered datasets.`);
+      result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a BRIN index for faster queries on large, naturally ordered datasets.` + '\n';
     }
     
     // Suggest GiST indexes for geometric data types
@@ -67,7 +68,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<void> {
 
   const resPotentialGiST = await client.query(queryGiSTCandidateColumns);
   for (const row of resPotentialGiST.rows) {
-    console.log(`Column '${row.column_name}' on table '${row.table_name}' might benefit from a GiST index for efficient geometric operations.`);
+    result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a GiST index for efficient geometric operations.` + '\n';
   }
 
   // Ensure foreign key columns are indexed
@@ -85,6 +86,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<void> {
 
   const resForeignKeys = await client.query(queryFKColumnsWithoutIndex);
   for (const row of resForeignKeys.rows) {
-    console.log(`Foreign key column '${row.column_name}' on table '${row.table_schema}.${row.table_name}' is not indexed. Consider adding an index to improve performance.`);
+    result += `Foreign key column '${row.column_name}' on table '${row.table_schema}.${row.table_name}' is not indexed. Consider adding an index to improve performance.` + '\n';
   }
+  return result;
 }

@@ -1,6 +1,9 @@
 import { Client } from 'pg';
 
-export async function analyzePotentialEnumColumns(client: Client, table: string): Promise<void> {
+export async function analyzePotentialEnumColumns(client: Client, table: string): Promise<string> {
+
+  let result = '';
+
   const queryColumns = `
     SELECT column_name
     FROM information_schema.columns
@@ -22,8 +25,9 @@ export async function analyzePotentialEnumColumns(client: Client, table: string)
     const distinctValuesCount = resDistinctValues.rowCount || 0;
 
     if (distinctValuesCount > 0 && distinctValuesCount <= enumThreshold) {
-      console.log(`Column '${column}' in table '${table}' has ${distinctValuesCount} distinct values and might be better represented as an enum type.`);
+      result += `Column '${column}' in table '${table}' has ${distinctValuesCount} distinct values and might be better represented as an enum type.` + '\n';
     }
   }
+  return result;
 }
 

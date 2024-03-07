@@ -1,3 +1,5 @@
+import express from 'express';
+import bodyParser from 'body-parser';
 import client from './utils/dbClient';
 import { analyzeTextAndBinaryDataLength } from './analyses/analyseDataLength';
 import { analyzePotentialEnumColumns } from './analyses/analyseEnumConsistency';
@@ -9,39 +11,56 @@ import { checkForeignKeyAndRelationships } from './analyses/analyseForeignKeyRel
 import { analyzeIndexUsageAndTypes } from './analyses/analyseIndexUsage';
 
 
-const analyzeTableColumns = async (table: string): Promise<void> => {
-    const query = `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = $1`;
-    const res = await client.query(query, [table]);
-    const columns = res.rows;
+const app = express();
+const port = 3000; 
 
-    await analyzeNumberInStringColumns(client, table);
-    await analyzeTemporalDataTypeAppropriateness(client, table);
-    await analyzeTextAndBinaryDataLength(client, table);
-    await analyzePotentialEnumColumns(client, table);
-    await analyzeNumericPrecisionAndScale(client, table);
-    await analyzeUnusedOrRarelyUsedColumns(client, table);
-  };
+app.use(bodyParser.json());
+app.use(express.static('public')); 
 
-const main = async () => {
+
+app.get('/analyze', async (req: any, res: { send: (arg0: string) => void; }) => {
     await client.connect();
+    let analysisResults = '';
   
     try {
-      const res = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-      const tables = res.rows;
+      const resTables = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+      const tables = resTables.rows;
       
-      //perform analysis on each table
+      // Perform analysis on each table
       for (const { table_name } of tables) {
-        await analyzeTableColumns(table_name);
+        analysisResults += await analyzeTableColumns(table_name) + '\n';
       }
-      //perform analysis on the database
-      await checkForeignKeyAndRelationships(client);
-      await analyzeIndexUsageAndTypes(client);
-
+      // Perform analysis on the database
+      analysisResults += await checkForeignKeyAndRelationships(client) + '\n';
+      analysisResults += await analyzeIndexUsageAndTypes(client) + '\n';
     } catch (error) {
       console.error(`Database analysis failed: ${error}`);
+      analysisResults += `Database analysis failed: ${error}`;
     } finally {
       await client.end();
     }
+  
+    res.send(`<pre>${analysisResults}</pre>`); // Send results formatted as preformatted text
+  });
+  
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+
+
+const analyzeTableColumns = async (table: string): Promise<string> => {
+    const query = `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = $1`;
+    const res = await client.query(query, [table]);
+
+    let analysisResults = '';
+
+    analysisResults += await analyzeNumberInStringColumns(client, table) + '\n';
+    analysisResults += await analyzeTemporalDataTypeAppropriateness(client, table) + '\n';
+    analysisResults += await analyzeTextAndBinaryDataLength(client, table) + '\n';
+    analysisResults += await analyzePotentialEnumColumns(client, table) + '\n';
+    analysisResults += await analyzeNumericPrecisionAndScale(client, table) + '\n';
+    analysisResults += await analyzeUnusedOrRarelyUsedColumns(client, table) + '\n';
+
+    return analysisResults;
   };
   
-  main();

@@ -1,6 +1,9 @@
 import { Client } from 'pg';
 
-export async function analyzeUnusedOrRarelyUsedColumns(client: Client, table: string): Promise<void> {
+export async function analyzeUnusedOrRarelyUsedColumns(client: Client, table: string): Promise<string> {
+
+  let result = '';
+
   const queryColumns = `
     SELECT column_name
     FROM information_schema.columns
@@ -23,11 +26,12 @@ export async function analyzeUnusedOrRarelyUsedColumns(client: Client, table: st
     const { total_rows, non_null_rows, non_null_percentage, unique_values } = resAnalysis.rows[0];
 
     if (non_null_percentage < unusedColumnPercentageThreshold) {
-      console.log(`Column '${column}' in table '${table}' is rarely used or mostly null (${non_null_percentage}% non-null values).`);
+      result += `Column '${column}' in table '${table}' is rarely used or mostly null (${non_null_percentage}% non-null values).` + '\n';
     }
 
     if (unique_values === 1 && total_rows > 1) {
-      console.log(`Column '${column}' in table '${table}' might be overusing a default value (only 1 unique value across non-null entries).`);
+      result +=`Column '${column}' in table '${table}' might be overusing a default value (only 1 unique value across non-null entries).` + '\n';
     }
   }
+  return result;
 }

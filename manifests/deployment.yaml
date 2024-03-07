@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-analyser-deployment
+  labels:
+    app: pg-analyser
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg-analyser
+  template:
+    metadata:
+      labels:
+        app: pg-analyser
+    spec:
+      containers:
+      - name: pg-analyser
+        image: yourname/pg-analyser:latest  # Replace with your actual image
+        ports:
+        - containerPort: 3000
+        env:
+        - name: PGUSER
+          value: "postgres"
+        - name: PGPASSWORD
+          value: "your_password"  # Use Kubernetes secrets for sensitive data
+        - name: PGHOST
+          value: "postgres-service"  # This should match the name of your PostgreSQL service
+        - name: PGDATABASE
+          value: "your_database"
+        - name: PGPORT
+          value: "5432"
+        - name: ENUM_THRESHOLD
+          value: "5"
+        - name: UNUSED_INDEX_THRESHOLD
+          value: "50"
+        - name: UNUSED_COLUMN_PERCENTAGE_THRESHOLD
+          value: "5"
+      resources:
+      requests:
+        memory: "64Mi" 
+        cpu: "250m"  
+      limits:
+        memory: "128Mi"  
+        cpu: "500m" 

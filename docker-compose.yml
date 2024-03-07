@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PGUSER: ${PGUSER}
+      PGPASSWORD: ${PGPASSWORD}
+      PGHOST: ${PGHOST}
+      PGDATABASE: ${PGDATABASE}
+      PGPORT: ${PGPORT}
+      ENUM_THRESHOLD: ${ENUM_THRESHOLD}
+      UNUSED_INDEX_THRESHOLD: ${UNUSED_INDEX_THRESHOLD}
+      UNUSED_COLUMN_PERCENTAGE_THRESHOLD: ${UNUSED_COLUMN_PERCENTAGE_THRESHOLD}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: ${PGDATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

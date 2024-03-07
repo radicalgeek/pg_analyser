@@ -1,6 +1,9 @@
 import { Client } from 'pg';
 
-export async function analyzeTextAndBinaryDataLength(client: Client, table: string): Promise<void> {
+export async function analyzeTextAndBinaryDataLength(client: Client, table: string): Promise<string> {
+  
+  let result = '';
+
   const query = `
     SELECT column_name, data_type, character_maximum_length
     FROM information_schema.columns
@@ -19,9 +22,11 @@ export async function analyzeTextAndBinaryDataLength(client: Client, table: stri
     const maxLengthInRows = dataRes.rows[0].max_length || 0;
 
     if (data_type === 'text' || data_type === 'bytea') {
-      console.log(`Column '${column_name}' in table '${table}' of type '${data_type}' has maximum length of data: ${maxLengthInRows}. Consider specifying a maximum length.`);
+      result += `Column '${column_name}' in table '${table}' of type '${data_type}' has maximum length of data: ${maxLengthInRows}. Consider specifying a maximum length.` + '\n';
     } else if (character_maximum_length > maxLengthInRows) {
-      console.log(`Column '${column_name}' in table '${table}' of type '${data_type}' with defined length ${character_maximum_length} could potentially be reduced to ${maxLengthInRows}.`);
+      result += `Column '${column_name}' in table '${table}' of type '${data_type}' with defined length ${character_maximum_length} could potentially be reduced to ${maxLengthInRows}.` + '\n';
     }
   }
+
+  return result;
 }

@@ -4,7 +4,10 @@ const isNumber = (value: string): boolean => !isNaN(Number(value));
 
 const isDate = (value: string): boolean => !isNaN(Date.parse(value));
 
-export const analyzeNumberInStringColumns = async (client: Client, table: string): Promise<void> => {
+export const analyzeNumberInStringColumns = async (client: Client, table: string): Promise<string> => {
+
+  let result = '';
+
   const queryColumns = `
     SELECT column_name
     FROM information_schema.columns
@@ -22,7 +25,8 @@ export const analyzeNumberInStringColumns = async (client: Client, table: string
     const allDates = rows.every(row => row[column_name] !== null && isDate(row[column_name]));
 
     if (allNumbers || allDates) {
-      console.log(`Column '${column_name}' in table '${table}' might be better as a numeric or date type.`);
+      result += `Column '${column_name}' in table '${table}' might be better as a numeric or date type.` + '\n';
     }
   }
+  return result;
 };

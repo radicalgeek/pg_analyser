@@ -1,6 +1,9 @@
 import { Client } from 'pg';
 
-export async function analyzeNumericPrecisionAndScale(client: Client, table: string): Promise<void> {
+export async function analyzeNumericPrecisionAndScale(client: Client, table: string): Promise<string> {
+
+  let result = '';
+
   const query = `
     SELECT column_name, numeric_precision, numeric_scale
     FROM information_schema.columns
@@ -22,11 +25,12 @@ export async function analyzeNumericPrecisionAndScale(client: Client, table: str
     const maxScale = dataRes.rows[0] ? dataRes.rows[0].max_scale : null;
 
     if (maxPrecision !== null && numeric_precision > maxPrecision) {
-      console.log(`Column '${column_name}' in table '${table}' has defined numeric precision of ${numeric_precision} which could potentially be reduced to ${maxPrecision}.`);
+      result += `Column '${column_name}' in table '${table}' has defined numeric precision of ${numeric_precision} which could potentially be reduced to ${maxPrecision}.` + '\n';
     }
 
     if (maxScale !== null && numeric_scale > maxScale) {
-      console.log(`Column '${column_name}' in table '${table}' has defined numeric scale of ${numeric_scale} which could potentially be reduced to ${maxScale}.`);
+      result += `Column '${column_name}' in table '${table}' has defined numeric scale of ${numeric_scale} which could potentially be reduced to ${maxScale}.` + '\n';
     }
   }
+  return result;
 }

@@ -1,6 +1,9 @@
 import { Client } from 'pg';
 
-export async function checkForeignKeyAndRelationships(client: Client): Promise<void> {
+export async function checkForeignKeyAndRelationships(client: Client): Promise<string> {
+
+  let result = '';
+
   const queryForeignKeys = `
     SELECT
       tc.table_schema,
@@ -33,7 +36,8 @@ export async function checkForeignKeyAndRelationships(client: Client): Promise<v
     ]);
 
     if (columnTypes[0].column_data_type !== columnTypes[0].foreign_column_data_type) {
-      console.log(`Data type mismatch in foreign key relationship: ${fk.table_name}.${fk.column_name} (${columnTypes[0].column_data_type}) -> ${fk.foreign_table_name}.${fk.foreign_column_name} (${columnTypes[0].foreign_column_data_type})`);
+      result += `Data type mismatch in foreign key relationship: ${fk.table_name}.${fk.column_name} (${columnTypes[0].column_data_type}) -> ${fk.foreign_table_name}.${fk.foreign_column_name} (${columnTypes[0].foreign_column_data_type})` + '\n';
     }
   }
+  return result;
 }
