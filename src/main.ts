@@ -7,7 +7,6 @@ import { analyzeNumericPrecisionAndScale } from './analyses/analyseNumericPositi
 import { analyzeNumberInStringColumns } from './analyses/analyseNumberAndDatesInStrings';
 import { analyzeTemporalDataTypeAppropriateness } from './analyses/analyseTemporalAppropriateness';
 import { analyzeUnusedOrRarelyUsedColumns } from './analyses/analyseUnusedAndRarelyUsedColumns';
-import { checkForeignKeyAndRelationships } from './analyses/analyseForeignKeyRelationships';
 import { analyzeIndexUsageAndTypes } from './analyses/analyseIndexUsage';
 
 
@@ -37,7 +36,6 @@ app.get('/analyze', async (req: any, res: { send: (arg0: string) => void; }) => 
         analysisResults += await analyzeTableColumns(table_name) + '\n';
       }
       // Perform analysis on the database
-      //analysisResults += await checkForeignKeyAndRelationships(client) + '\n';
       analysisResults += await analyzeIndexUsageAndTypes(client) + '\n';
     } catch (error) {
       console.error(`Database analysis failed: ${error}`);
