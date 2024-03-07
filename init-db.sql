@@ -1,4 +1,4 @@
--- init-db.sql
+-- init-db.sql test script for the SQL Database Analyzer
 
 -- Creates a table with data types that could be optimized
 CREATE TABLE employee (

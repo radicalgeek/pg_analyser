@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: pg-analyser
-        image: yourname/pg-analyser:latest  # Replace with your actual image
+        image: radicalgeek/pg-analyser:latest
         ports:
         - containerPort: 3000
         env:
