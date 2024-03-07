@@ -25,7 +25,7 @@ services:
       POSTGRES_PASSWORD: ${PGPASSWORD}
       POSTGRES_DB: ${PGDATABASE}
     volumes:
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql  # Mount the SQL script
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
       - postgres_data:/var/lib/postgresql/data
 
 volumes:
