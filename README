@@ -1,0 +1,74 @@
+# pg_analyser
+
+`pg_analyser` is a PostgreSQL database analysis tool designed to inspect and report on various aspects of database schema configuration and data usage patterns. It helps identify potential issues and optimizations to ensure the database is structured efficiently, both in terms of storage and query performance. This utility performs an array of checks across the database, providing insights into areas such as data type appropriateness, index usage, foreign key relationships, and more.
+
+## Features
+
+`pg_analyser` conducts several types of analysis on a PostgreSQL database:
+
+1. **Data Type Checks**: Identifies columns where the data type might not be optimal for the data stored (e.g., numeric data stored as text, oversized character lengths).
+
+2. **Index Usage and Types**: Evaluates the usage of existing indexes to identify unused or rarely used indexes that may consume unnecessary resources, and suggests more efficient index types where applicable.
+
+3. **Foreign Key and Relationship Checks**: Ensures consistency in data types across foreign key relationships and identifies potential referential integrity issues.
+
+4. **Unused or Rarely Used Columns**: Detects columns that have a high percentage of null values or a lack of diversity in their data, which might indicate that the column is underutilized.
+
+5. **Temporal Data Type Appropriateness**: Reviews columns with temporal data to ensure that the most appropriate data type is used, considering the need for time zone awareness and precision.
+
+6. **Consistent Use of Enums**: Identifies columns that could benefit from being converted to enum types, based on the repetition of a limited set of string values.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (version 14 or newer recommended)
+- PostgreSQL database access
+- `pg` package for PostgreSQL interaction in Node.js
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/pg_analyser.git
+cd pg_analyser
+```
+
+2. nstall dependencies:
+```bash
+npm install
+```
+
+3. Configure database connection settings by editing the .env file or setting environment variables directly:
+```
+PGHOST='localhost'
+PGUSER='your_database_user'
+PGDATABASE='your_database_name'
+PGPASSWORD='your_database_password'
+PGPORT=5432
+```
+
+### Usage
+Run pg_analyser by executing the main script:
+
+```
+npm start
+```
+
+The utility will connect to the specified PostgreSQL database and begin performing its suite of checks. Results and recommendations will be printed to the console.
+
+### Deployment
+Instructions for deploying pg_analyser as a Docker container and running it within a Kubernetes (k8s) cluster are included in the Dockerfile and Kubernetes job manifest (db-analysis-job.yaml) provided in the repository.
+
+### Contributing
+Contributions are welcome! Please read the CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests to us.
+
+### License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+### Acknowledgments
+This utility was designed to assist database administrators and developers in optimizing their PostgreSQL databases for better performance and efficiency.
+
+### Disclaimer
+pg_analyser makes recommendations based on general best practices and observations. Always review suggested changes and test them in a development environment before applying to production databases.
