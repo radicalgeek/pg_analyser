@@ -7,15 +7,17 @@
 
 `pg_analyser` conducts several types of analysis on a PostgreSQL database:
 
-1. **Data Type Checks**: Identifies columns where the data type might not be optimal for the data stored (e.g., numeric or date data stored as text and oversized character lengths).
+1. **Data Type Checks**: Identifies columns where the data type might not be optimal for the data stored (e.g., numeric, boolean or date data stored as text and boolean stored as numbers). 
 
-2. **Index Usage and Types**: Evaluates the usage of existing indexes to identify unused or rarely used indexes that may consume unnecessary resources, and suggests more efficient index types where applicable.
+2. **Oversized Columns** Checks for oversized character lengths and identifies the maximum data size used by a record in a column. Works for both strings and numeric precision.
 
-3. **Unused or Rarely Used Columns**: Detects columns that have a high percentage of null values or a lack of diversity in their data, which might indicate that the column is underutilized.
+3. **Index Usage and Types**: Evaluates the usage of existing indexes to identify unused or rarely used indexes that may consume unnecessary resources as well as duplicate indexes. Suggests more efficient index types where applicable (GIN indexes for type 'text[], BRIN indexes for large tables with monotonically increasing columns and GiST indexes for geometric data) Also ensure foreign key columns are indexed.
 
-4. **Temporal Data Type Appropriateness**: Reviews columns with temporal data (datws and time) to ensure that the most appropriate data type is used, considering the need for time zone awareness and precision.
+4. **Unused or Rarely Used Columns**: Detects columns that have a high percentage of null values or a lack of diversity in their data, which might indicate that the column is underutilised.
 
-5. **Consistent Use of Enums**: Identifies columns that could benefit from being converted to enum types, based on the repetition of a limited set of string values.
+5. **Temporal Data Type Appropriateness**: Reviews columns with temporal data (dates and times) to ensure that the most appropriate data type is used, considering the need for time zone awareness and precision.
+
+6. **Consistent Use of Enums**: Identifies columns that could benefit from being converted to enum types, based on the repetition of a limited set of string values.
 
 ## Getting Started
 
@@ -102,14 +104,14 @@ Usage: The ENUM_THRESHOLD value of 5 means that if a text column has 5 or fewer 
 #### UNUSED_INDEX_THRESHOLD
 This environment variable sets the threshold for identifying unused or infrequently used indexes based on their usage statistics.
 
-Purpose: Indexes are meant to improve database query performance. However, maintaining indexes also incurs overhead during write operations and uses additional storage. Identifying and removing unused or rarely used indexes can help optimize resource usage.
+Purpose: Indexes are meant to improve database query performance. However, maintaining indexes also incurs overhead during write operations and uses additional storage. Identifying and removing unused or rarely used indexes can help optimise resource usage.
 Usage: The UNUSED_INDEX_THRESHOLD value of 50 indicates that if an index has been scanned fewer than 50 times (indicating low usage), the tool will suggest evaluating whether this index is necessary and potentially removing it to save resources.
 
 #### UNUSED_COLUMN_PERCENTAGE_THRESHOLD
 This environment variable sets the threshold for identifying columns that are rarely used or mostly contain null values as a percentage of total rows in the table.
 
 Purpose: Columns that are mostly unused or contain a high percentage of null values might indicate design inefficiencies in the database schema. Identifying such columns can help database administrators and developers review and possibly refactor their schema for better efficiency.
-Usage: The UNUSED_COLUMN_PERCENTAGE_THRESHOLD value of 5 means that if a column has non-null values in less than 5% of its rows, the tool will flag this column as being rarely used or mostly null, suggesting a review to determine if it can be removed or its usage optimized.
+Usage: The UNUSED_COLUMN_PERCENTAGE_THRESHOLD value of 5 means that if a column has non-null values in less than 5% of its rows, the tool will flag this column as being rarely used or mostly null, suggesting a review to determine if it can be removed or its usage optimised.
 
 ### Contributing
 Contributions are welcome! Just send a pull request.
