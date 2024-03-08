@@ -1,3 +1,4 @@
+![pg alalyser logo](https://github.com/radicalgeek/pg_analyser/blob/main/src/logo.webp?raw=true)
 # pg_analyser
 
 `pg_analyser` is a web-based PostgreSQL database analysis tool designed to inspect and report on various aspects of database schema configuration and data usage patterns. It helps identify potential issues and optimisations to ensure the database is structured efficiently, both in terms of storage and query performance. This utility performs an array of checks across the database, providing insights into areas such as data type appropriateness and index usage, with a user-friendly web interface for initiating analysis and viewing recommendations.
