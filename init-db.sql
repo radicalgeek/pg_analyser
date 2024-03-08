@@ -93,3 +93,42 @@ INSERT INTO department (name) VALUES
 ('Engineering'),
 ('Human Resources'),
 ('Marketing');
+
+-- Creates a table to test boolean checks on string columns
+CREATE TABLE user_preferences (
+    user_id SERIAL PRIMARY KEY,
+    dark_mode TEXT, -- Will be checked if better as boolean (true/false)
+    email_notifications TEXT -- Will be checked if better as boolean (yes/no)
+);
+
+-- Inserts sample data into the user_preferences table
+INSERT INTO user_preferences (dark_mode, email_notifications) VALUES
+('true', 'yes'),
+('false', 'no'),
+('true', 'yes'),
+('false', 'no');
+
+-- Creates a table to test boolean checks on numeric columns
+CREATE TABLE feature_flags (
+    feature_id SERIAL PRIMARY KEY,
+    is_enabled INTEGER -- Will be checked if better as boolean (0/1)
+);
+
+-- Inserts sample data into the feature_flags table
+INSERT INTO feature_flags (is_enabled) VALUES
+(1),
+(0),
+(1),
+(0);
+
+-- Add a new column to `employee` table to test if numeric column only containing 0 and 1 should be boolean
+ALTER TABLE employee ADD COLUMN is_full_time INTEGER;
+
+-- Insert or update data to set the is_full_time flag
+UPDATE employee SET is_full_time = 1 WHERE id = 1; -- Assume existing employee ids
+UPDATE employee SET is_full_time = 0 WHERE id = 2;
+
+-- Optionally, if you want to ensure all rows have this column set for testing:
+INSERT INTO employee (name, email, salary, is_full_time) VALUES
+('New Employee', 'new@example.com', '55000', 1),
+('Another Employee', 'another@example.com', '45000', 0);

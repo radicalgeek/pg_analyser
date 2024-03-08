@@ -4,7 +4,7 @@ import client from './utils/dbClient';
 import { analyzeTextAndBinaryDataLength } from './analyses/analyseDataLength';
 import { analyzePotentialEnumColumns } from './analyses/analyseEnumConsistency';
 import { analyzeNumericPrecisionAndScale } from './analyses/analyseNumericPositionAndScale';
-import { analyzeNumberInStringColumns } from './analyses/analyseNumberAndDatesInStrings';
+import { analyseColumnDataTypes } from './analyses/analyseColumnDataTypes';
 import { analyzeTemporalDataTypeAppropriateness } from './analyses/analyseTemporalAppropriateness';
 import { analyzeUnusedOrRarelyUsedColumns } from './analyses/analyseUnusedAndRarelyUsedColumns';
 import { analyzeIndexUsageAndTypes } from './analyses/analyseIndexUsage';
@@ -57,7 +57,7 @@ const analyzeTableColumns = async (table: string): Promise<string> => {
 
     let analysisResults = '';
 
-    analysisResults += await analyzeNumberInStringColumns(client, table) + '\n';
+    analysisResults += await analyseColumnDataTypes(client, table) + '\n';
     analysisResults += await analyzeTemporalDataTypeAppropriateness(client, table) + '\n';
     analysisResults += await analyzeTextAndBinaryDataLength(client, table) + '\n';
     analysisResults += await analyzePotentialEnumColumns(client, table) + '\n';
