@@ -11,7 +11,7 @@
 
 2. **Oversized Columns** Checks for oversized character lengths and identifies the maximum data size used by a record in a column. Works for both strings and numeric precision.
 
-3. **Index Usage and Types**: Evaluates the usage of existing indexes to identify unused or rarely used indexes that may consume unnecessary resources as well as duplicate indexes. Suggests more efficient index types where applicable (GIN indexes for type 'text[], BRIN indexes for large tables with monotonically increasing columns and GiST indexes for geometric data) Also ensure foreign key columns are indexed.
+3. **Index Usage and Types**: Evaluates the usage of existing indexes to identify unused or rarely used indexes that may consume unnecessary resources as well as duplicate indexes. Suggests more efficient index types where applicable (GIN indexes for type text[], BRIN indexes for large tables with monotonically increasing columns and GiST indexes for geometric data) Also ensure foreign key columns are indexed.
 
 4. **Unused or Rarely Used Columns**: Detects columns that have a high percentage of null values or a lack of diversity in their data, which might indicate that the column is underutilised.
 
