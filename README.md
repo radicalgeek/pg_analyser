@@ -23,7 +23,7 @@
 
 ### Prerequisites
 
-- ***Testingin docker*** Docker and Docker compose for local testing
+- ***Testing in docker*** Docker and Docker compose for local testing
 - ***Testing localy*** PostgreSQL database installed, node.js, jest, express, pg etc...
 - ***Running in K8sS*** PostgreSQL database access to conduct the test. K8S manifests profided for easy deployment 
 
