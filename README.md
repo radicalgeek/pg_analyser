@@ -56,7 +56,7 @@ npm test
 
 ### Deployment
 
-The project includes kubernetes manifests for running the application in a pod. 
+The project includes kubernetes manifests for running the application in a pod. A pre-built container image is avaliable on docker hub too https://hub.docker.com/repository/docker/radicalgeek/pg_analyser/general
 
 1. Ensure your Kubernetes cluster is running and `kubectl` is configured to communicate with your cluster.
 
