@@ -1,18 +1,18 @@
 # pg_analyser
 
-`pg_analyser` is a web-based PostgreSQL database analysis tool designed to inspect and report on various aspects of database schema configuration and data usage patterns. It helps identify potential issues and optimizations to ensure the database is structured efficiently, both in terms of storage and query performance. This utility performs an array of checks across the database, providing insights into areas such as data type appropriateness, index usage, foreign key relationships, and more, with a user-friendly web interface for initiating analysis and viewing recommendations.
+`pg_analyser` is a web-based PostgreSQL database analysis tool designed to inspect and report on various aspects of database schema configuration and data usage patterns. It helps identify potential issues and optimisations to ensure the database is structured efficiently, both in terms of storage and query performance. This utility performs an array of checks across the database, providing insights into areas such as data type appropriateness and index usage, with a user-friendly web interface for initiating analysis and viewing recommendations.
 
 ## Features
 
 `pg_analyser` conducts several types of analysis on a PostgreSQL database:
 
-1. **Data Type Checks**: Identifies columns where the data type might not be optimal for the data stored (e.g., numeric data stored as text, oversized character lengths).
+1. **Data Type Checks**: Identifies columns where the data type might not be optimal for the data stored (e.g., numeric or date data stored as text and oversized character lengths).
 
 2. **Index Usage and Types**: Evaluates the usage of existing indexes to identify unused or rarely used indexes that may consume unnecessary resources, and suggests more efficient index types where applicable.
 
 3. **Unused or Rarely Used Columns**: Detects columns that have a high percentage of null values or a lack of diversity in their data, which might indicate that the column is underutilized.
 
-4. **Temporal Data Type Appropriateness**: Reviews columns with temporal data to ensure that the most appropriate data type is used, considering the need for time zone awareness and precision.
+4. **Temporal Data Type Appropriateness**: Reviews columns with temporal data (datws and time) to ensure that the most appropriate data type is used, considering the need for time zone awareness and precision.
 
 5. **Consistent Use of Enums**: Identifies columns that could benefit from being converted to enum types, based on the repetition of a limited set of string values.
 
@@ -20,8 +20,9 @@
 
 ### Prerequisites
 
-- Docker and Docker compose for local testing
-- PostgreSQL database access to conduct the test
+- ***Testingin docker*** Docker and Docker compose for local testing
+- ***Testing localy*** PostgreSQL database installed, node.js, jest, express, pg etc...
+- ***Running in K8sS*** PostgreSQL database access to conduct the test. K8S manifests profided for easy deployment 
 
 ### Testing
 
@@ -41,7 +42,14 @@ cp .env.template .env
 docker-compose up --build
 ```
 
-4. Access the service at http://localhost:3000
+4. Access the service at http://localhost:3000 
+
+5. the compose file will bring up a database with a number of misconfigured tables that the tool will identify. 
+
+6. In addition you can run the unit tests locally with 
+```bash
+npm test
+```
 
 ### Deployment
 
@@ -66,7 +74,7 @@ kubectl proxy
 http://localhost:8001/api/v1/namespaces/your_namespace/services/pg-analyser-service:80/proxy/
 
 ```
-make sure you replace `your_namespace` with the actual namespace of the deployment
+Make sure you replace `your_namespace` with the actual namespace of the deployment. You
 
 ### Environment variables. 
 
@@ -82,6 +90,7 @@ ENUM_THRESHOLD=5
 UNUSED_INDEX_THRESHOLD=50
 UNUSED_COLUMN_PERCENTAGE_THRESHOLD=5
 ```
+
 
 #### ENUM_THRESHOLD
 This environment variable sets the threshold for suggesting conversion of text columns to enum types based on the number of distinct values found in those columns.
@@ -102,13 +111,13 @@ Purpose: Columns that are mostly unused or contain a high percentage of null val
 Usage: The UNUSED_COLUMN_PERCENTAGE_THRESHOLD value of 5 means that if a column has non-null values in less than 5% of its rows, the tool will flag this column as being rarely used or mostly null, suggesting a review to determine if it can be removed or its usage optimized.
 
 ### Contributing
-Contributions are welcome! 
+Contributions are welcome! Just send a pull request.
 
 ### License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ### Acknowledgments
-This utility was designed to assist database administrators and developers in optimizing their PostgreSQL databases for better performance and efficiency.
+This utility was designed to assist database administrators and developers in optimising their PostgreSQL databases for better performance and efficiency.
 
 ### Disclaimer
 pg_analyser makes recommendations based on general best practices and observations. Always review suggested changes and test them in a development environment before applying to production databases.
