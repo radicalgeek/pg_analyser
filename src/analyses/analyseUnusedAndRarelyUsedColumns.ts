@@ -1,6 +1,6 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
-export async function analyzeUnusedOrRarelyUsedColumns(client: Client, table: string): Promise<string> {
+export async function analyzeUnusedOrRarelyUsedColumns(pool: Pool, table: string): Promise<string> {
 
   let result = '<h2>Unused or Rarely Used Columns Analysis</h2>';
 
@@ -9,7 +9,7 @@ export async function analyzeUnusedOrRarelyUsedColumns(client: Client, table: st
     FROM information_schema.columns
     WHERE table_name = $1 AND table_schema = 'public'`;
 
-  const resColumns = await client.query(queryColumns, [table]);
+  const resColumns = await pool.query(queryColumns, [table]);
   const columns = resColumns.rows.map(row => row.column_name);
 
   const unusedColumnPercentageThreshold = parseFloat(process.env.UNUSED_COLUMN_PERCENTAGE_THRESHOLD || '5');
@@ -22,7 +22,7 @@ export async function analyzeUnusedOrRarelyUsedColumns(client: Client, table: st
              COUNT(DISTINCT "${column}") AS unique_values
       FROM "${table}"`;
 
-    const resAnalysis = await client.query(queryAnalysis);
+    const resAnalysis = await pool.query(queryAnalysis);
     const { total_rows, non_null_rows, non_null_percentage, unique_values } = resAnalysis.rows[0];
 
     if (non_null_percentage < unusedColumnPercentageThreshold) {

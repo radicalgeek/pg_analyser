@@ -1,6 +1,6 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
-export async function analyzeNumericPrecisionAndScale(client: Client, table: string): Promise<string> {
+export async function analyzeNumericPrecisionAndScale(pool: Pool, table: string): Promise<string> {
 
   let result = '<h2>Numeric Precision and Scale Analysis</h2>';
 
@@ -10,7 +10,7 @@ export async function analyzeNumericPrecisionAndScale(client: Client, table: str
     WHERE table_name = $1
       AND data_type IN ('numeric', 'decimal')`;
 
-  const { rows } = await client.query(query, [table]);
+  const { rows } = await pool.query(query, [table]);
   
   for (const row of rows) {
     const { column_name, numeric_precision, numeric_scale } = row;
@@ -26,7 +26,7 @@ export async function analyzeNumericPrecisionAndScale(client: Client, table: str
       WHERE "${column_name}" IS NOT NULL
     ) AS subquery`;
 
-    const dataRes = await client.query(dataQuery);
+    const dataRes = await pool.query(dataQuery);
     const maxPrecision = dataRes.rows[0] ? dataRes.rows[0].max_precision : null;
     const maxScale = dataRes.rows[0] ? dataRes.rows[0].max_scale : null;
 

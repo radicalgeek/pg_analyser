@@ -1,4 +1,4 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
 const isNumber = (value: string): boolean => !isNaN(Number(value));
 
@@ -9,7 +9,7 @@ const isBooleanLike = (value: string): boolean => {
   return lowerValue === 'yes' || lowerValue === 'no' || lowerValue === 'true' || lowerValue === 'false' || lowerValue === '1' || lowerValue === '0';
 };
 
-export const analyseColumnDataTypes = async (client: Client, table: string): Promise<string> => {
+export const analyseColumnDataTypes = async (pool: Pool, table: string): Promise<string> => {
 
   let result = '<h2>Column Type Analysis</h2>';
 
@@ -19,11 +19,11 @@ export const analyseColumnDataTypes = async (client: Client, table: string): Pro
     WHERE table_name = $1
       AND data_type IN ('character varying', 'text', 'numeric', 'decimal', 'integer', 'bigint')`;
   
-  const resColumns = await client.query(queryColumns, [table]);
+  const resColumns = await pool.query(queryColumns, [table]);
   
   for (const { column_name, data_type } of resColumns.rows) {
     const query = `SELECT "${column_name}" FROM "${table}"`;
-    const res = await client.query(query);
+    const res = await pool.query(query);
     const rows = res.rows;
 
     const allNumbers = rows.every(row => row[column_name] !== null && isNumber(row[column_name]));

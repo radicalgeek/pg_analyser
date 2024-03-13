@@ -1,21 +1,21 @@
 // tests/analyzeEnumConsistency.test.ts
-import { Client } from 'pg';
+import { Pool } from 'pg';
 import { analyzePotentialEnumColumns } from '../src/analyses/analyseEnumConsistency';
 
 jest.mock('pg', () => {
-  const mClient = {
+  const mPool = {
     query: jest.fn(),
     connect: jest.fn(),
     end: jest.fn(),
   };
-  return { Client: jest.fn(() => mClient) };
+  return { Pool: jest.fn(() => mPool) };
 });
 
 describe('analyzePotentialEnumColumns', () => {
-  let client: Client;
+  let pool: Pool;
   
   beforeEach(() => {
-    client = new Client();
+    pool = new Pool();
     process.env.ENUM_THRESHOLD = '5'; // Set the threshold for testing
   });
 
@@ -29,13 +29,13 @@ describe('analyzePotentialEnumColumns', () => {
       rowCount: 3, // Assume 3 distinct values
     };
 
-    (client.query as jest.Mock)
+    (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnsData) // First call for column details
       .mockResolvedValueOnce(mockDistinctValuesData); // Second call for distinct values count
 
-    const result = await analyzePotentialEnumColumns(client, 'order_status');
+    const result = await analyzePotentialEnumColumns(pool, 'order_status');
     expect(result).toContain('might be better represented as an enum type');
-    expect(client.query).toHaveBeenCalledTimes(2);
+    expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
   it('should not suggest enum for columns with distinct values exceeding the threshold', async () => {
@@ -48,13 +48,13 @@ describe('analyzePotentialEnumColumns', () => {
       rowCount: 10, // Assume 10 distinct values, exceeding the threshold
     };
 
-    (client.query as jest.Mock)
+    (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnsData) // First call for column details
       .mockResolvedValueOnce(mockDistinctValuesData); // Second call for distinct values count
 
-    const result = await analyzePotentialEnumColumns(client, 'product_info');
+    const result = await analyzePotentialEnumColumns(pool, 'product_info');
     expect(result).not.toContain('might be better represented as an enum type');
-    expect(client.query).toHaveBeenCalledTimes(2);
+    expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
   it('should return "No Issues Found." if no columns meet criteria', async () => {
@@ -62,12 +62,12 @@ describe('analyzePotentialEnumColumns', () => {
       rows: [], // No columns returned
     };
 
-    (client.query as jest.Mock)
+    (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnsData);
 
-    const result = await analyzePotentialEnumColumns(client, 'empty_table');
+    const result = await analyzePotentialEnumColumns(pool, 'empty_table');
     expect(result).toContain('No Issues Found.');
-    expect(client.query).toHaveBeenCalledTimes(1);
+    expect(pool.query).toHaveBeenCalledTimes(1);
   });
 
   afterEach(() => {

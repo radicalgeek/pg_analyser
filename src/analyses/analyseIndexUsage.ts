@@ -1,6 +1,6 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
-export async function analyzeIndexUsageAndTypes(client: Client): Promise<string> {
+export async function analyzeIndexUsageAndTypes(pool: Pool): Promise<string> {
 
   let result = '<h2>Index Usage and Types Analysis</h2>';
   const unusedIndexThreshold = parseInt(process.env.UNUSED_INDEX_THRESHOLD || '50');
@@ -17,7 +17,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
     WHERE stat.idx_scan < ${unusedIndexThreshold}
     AND ns.nspname NOT IN ('pg_catalog', 'information_schema');`; 
 
-  const resUnusedIndexes = await client.query(queryUnusedIndexes);
+  const resUnusedIndexes = await pool.query(queryUnusedIndexes);
   for (const row of resUnusedIndexes.rows) {
     result += `Index '${row.index_name}' on table '${row.table_name}' has very low usage (${row.index_scans} scans). Consider if it's necessary.` + '\n';
   }
@@ -32,7 +32,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
     GROUP BY indrelid, indkey
     HAVING COUNT(*) > 1;`;
 
-    const resDuplicateIndexes = await client.query(queryDuplicateIndexes);
+    const resDuplicateIndexes = await pool.query(queryDuplicateIndexes);
     for (const row of resDuplicateIndexes.rows) {
       result += `Duplicate indexes found on table ${row.table}: ${row.duplicate_indexes.join(', ')}. Consider removing redundant indexes.` + '\n';
     }
@@ -46,7 +46,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
     AND t.table_schema NOT IN ('pg_catalog', 'information_schema')
     AND t.table_type = 'BASE TABLE';`;
 
-  const resPotentialGIN = await client.query(queryPotentialGINIndexes);
+  const resPotentialGIN = await pool.query(queryPotentialGINIndexes);
   for (const row of resPotentialGIN.rows) {
     result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a GIN index for improved search performance.` + '\n';
   }
@@ -65,7 +65,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
       );
     `;
   
-    const resPotentialBRIN  = await client.query(queryBRINCandidateColumns);
+    const resPotentialBRIN  = await pool.query(queryBRINCandidateColumns);
     for (const row of resPotentialBRIN.rows) {
       result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a BRIN index for faster queries on large, naturally ordered datasets.` + '\n';
     }
@@ -77,7 +77,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
       WHERE data_type IN ('point', 'polygon', 'circle');
     `;
 
-  const resPotentialGiST = await client.query(queryGiSTCandidateColumns);
+  const resPotentialGiST = await pool.query(queryGiSTCandidateColumns);
   for (const row of resPotentialGiST.rows) {
     result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a GiST index for efficient geometric operations.` + '\n';
   }
@@ -95,7 +95,7 @@ export async function analyzeIndexUsageAndTypes(client: Client): Promise<string>
       );
   `;
 
-  const resForeignKeys = await client.query(queryFKColumnsWithoutIndex);
+  const resForeignKeys = await pool.query(queryFKColumnsWithoutIndex);
   for (const row of resForeignKeys.rows) {
     result += `Foreign key column '${row.column_name}' on table '${row.table_schema}.${row.table_name}' is not indexed. Consider adding an index to improve performance.` + '\n';
   }

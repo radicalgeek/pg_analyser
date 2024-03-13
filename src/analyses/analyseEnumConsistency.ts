@@ -1,6 +1,6 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
-export async function analyzePotentialEnumColumns(client: Client, table: string): Promise<string> {
+export async function analyzePotentialEnumColumns(pool: Pool, table: string): Promise<string> {
 
   let result = '<h2>Potential Enum Columns Analysis</h2>';
 
@@ -11,7 +11,7 @@ export async function analyzePotentialEnumColumns(client: Client, table: string)
       AND table_schema = 'public'
       AND data_type IN ('character varying', 'text')`;
 
-  const resColumns = await client.query(queryColumns, [table]);
+  const resColumns = await pool.query(queryColumns, [table]);
   const columns = resColumns.rows.map(row => row.column_name);
 
   const enumThreshold = parseInt(process.env.ENUM_THRESHOLD || '5');
@@ -21,7 +21,7 @@ export async function analyzePotentialEnumColumns(client: Client, table: string)
       SELECT DISTINCT "${column}"
       FROM "${table}"`;
     
-    const resDistinctValues = await client.query(queryDistinctValues);
+    const resDistinctValues = await pool.query(queryDistinctValues);
     const distinctValuesCount = resDistinctValues.rowCount || 0;
 
     if (distinctValuesCount > 0 && distinctValuesCount <= enumThreshold) {

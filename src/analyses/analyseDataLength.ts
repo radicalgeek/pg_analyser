@@ -1,6 +1,6 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
-export async function analyzeTextAndBinaryDataLength(client: Client, table: string): Promise<string> {
+export async function analyzeTextAndBinaryDataLength(pool: Pool, table: string): Promise<string> {
   
   let result = '<h2>Text and Binary Data Length Analysis</h2>';
 
@@ -10,7 +10,7 @@ export async function analyzeTextAndBinaryDataLength(client: Client, table: stri
     WHERE table_name = $1
       AND data_type IN ('character varying', 'character', 'text', 'bytea')`;
 
-  const { rows } = await client.query(query, [table]);
+  const { rows } = await pool.query(query, [table]);
   
   for (const row of rows) {
     const { column_name, data_type, character_maximum_length } = row;
@@ -18,7 +18,7 @@ export async function analyzeTextAndBinaryDataLength(client: Client, table: stri
       SELECT MAX(LENGTH("${column_name}")) as max_length
       FROM "${table}"`;
 
-    const dataRes = await client.query(dataQuery);
+    const dataRes = await pool.query(dataQuery);
     const maxLengthInRows = dataRes.rows[0].max_length || 0;
 
     if (data_type === 'text' || data_type === 'bytea') {

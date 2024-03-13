@@ -1,21 +1,21 @@
 // tests/analyzeTemporalAppropriateness.test.ts
-import { Client } from 'pg';
+import { Pool } from 'pg';
 import { analyzeTemporalDataTypeAppropriateness } from '../src/analyses/analyseTemporalAppropriateness';
 
 jest.mock('pg', () => {
-  const mClient = {
+  const mPool = {
     query: jest.fn(),
     connect: jest.fn(),
     end: jest.fn(),
   };
-  return { Client: jest.fn(() => mClient) };
+  return { Pool: jest.fn(() => mPool) };
 });
 
 describe('analyzeTemporalDataTypeAppropriateness', () => {
-  let client: Client;
+  let pool: Pool;
 
   beforeEach(() => {
-    client = new Client();
+    pool = new Pool();
   });
 
   it('should suggest time zone awareness for columns defined without time zone', async () => {
@@ -25,11 +25,11 @@ describe('analyzeTemporalDataTypeAppropriateness', () => {
       ],
     };
 
-    (client.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
+    (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
-    const result = await analyzeTemporalDataTypeAppropriateness(client, 'events');
+    const result = await analyzeTemporalDataTypeAppropriateness(pool, 'events');
     expect(result).toContain("Consider if 'with time zone' might be more appropriate for time zone awareness");
-    expect(client.query).toHaveBeenCalledTimes(1);
+    expect(pool.query).toHaveBeenCalledTimes(1);
   });
 
   it('should not suggest changes for columns already defined with time zone', async () => {
@@ -39,11 +39,11 @@ describe('analyzeTemporalDataTypeAppropriateness', () => {
       ],
     };
 
-    (client.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
+    (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
-    const result = await analyzeTemporalDataTypeAppropriateness(client, 'events');
+    const result = await analyzeTemporalDataTypeAppropriateness(pool, 'events');
     expect(result).not.toContain("Consider if 'with time zone' might be more appropriate for time zone awareness");
-    expect(client.query).toHaveBeenCalledTimes(1);
+    expect(pool.query).toHaveBeenCalledTimes(1);
   });
 
   it('should return "No Issues Found." if no temporal columns are present', async () => {
@@ -51,11 +51,11 @@ describe('analyzeTemporalDataTypeAppropriateness', () => {
       rows: [],
     };
 
-    (client.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
+    (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
-    const result = await analyzeTemporalDataTypeAppropriateness(client, 'empty_table');
+    const result = await analyzeTemporalDataTypeAppropriateness(pool, 'empty_table');
     expect(result).toContain('No Issues Found.');
-    expect(client.query).toHaveBeenCalledTimes(1);
+    expect(pool.query).toHaveBeenCalledTimes(1);
   });
 
   afterEach(() => {
