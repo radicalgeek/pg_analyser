@@ -1,6 +1,6 @@
 // tests/analyseDataLength.test.ts
 import { Pool } from 'pg';
-import { analyzeTextAndBinaryDataLength } from '../src/analyses/analyseDataLength';
+import { analyseTextAndBinaryDataLength } from '../src/analyses/analyseDataLength';
 
 jest.mock('pg', () => {
   const mQuery = jest.fn();
@@ -12,7 +12,7 @@ jest.mock('pg', () => {
   return { Pool: jest.fn(() => mPool) };
 });
 
-describe('analyzeTextAndBinaryDataLength', () => {
+describe('analyseTextAndBinaryDataLength', () => {
   let pool: Pool;
   beforeEach(() => {
     pool = new Pool();
@@ -33,7 +33,7 @@ describe('analyzeTextAndBinaryDataLength', () => {
         .mockResolvedValueOnce(mockLengthDataText) // Second call for the 'test_text' column
         .mockResolvedValueOnce(mockLengthDataBytea); // Third call for the 'test_bytea' column
 
-    const result = await analyzeTextAndBinaryDataLength(pool, 'test_table');
+    const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
     expect(result).toContain('has maximum length of data: 100');
     expect(pool.query).toHaveBeenCalledTimes(3);
 });
@@ -51,7 +51,7 @@ describe('analyzeTextAndBinaryDataLength', () => {
     (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData).mockResolvedValueOnce(mockLengthData);
 
 
-    const result = await analyzeTextAndBinaryDataLength(pool, 'test_table');
+    const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
     expect(result).toContain('could potentially be reduced to 50');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
@@ -59,7 +59,7 @@ describe('analyzeTextAndBinaryDataLength', () => {
   it('should return "No Issues Found." if no applicable columns', async () => {
     (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [] }); 
 
-    const result = await analyzeTextAndBinaryDataLength(pool, 'test_table');
+    const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
     expect(result).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(1);
   });

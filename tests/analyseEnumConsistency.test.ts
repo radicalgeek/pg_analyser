@@ -1,6 +1,6 @@
 // tests/analyzeEnumConsistency.test.ts
 import { Pool } from 'pg';
-import { analyzePotentialEnumColumns } from '../src/analyses/analyseEnumConsistency';
+import { analysePotentialEnumColumns } from '../src/analyses/analyseEnumConsistency';
 
 jest.mock('pg', () => {
   const mPool = {
@@ -33,7 +33,7 @@ describe('analyzePotentialEnumColumns', () => {
       .mockResolvedValueOnce(mockColumnsData) // First call for column details
       .mockResolvedValueOnce(mockDistinctValuesData); // Second call for distinct values count
 
-    const result = await analyzePotentialEnumColumns(pool, 'order_status');
+    const result = await analysePotentialEnumColumns(pool, 'order_status');
     expect(result).toContain('might be better represented as an enum type');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
@@ -52,7 +52,7 @@ describe('analyzePotentialEnumColumns', () => {
       .mockResolvedValueOnce(mockColumnsData) // First call for column details
       .mockResolvedValueOnce(mockDistinctValuesData); // Second call for distinct values count
 
-    const result = await analyzePotentialEnumColumns(pool, 'product_info');
+    const result = await analysePotentialEnumColumns(pool, 'product_info');
     expect(result).not.toContain('might be better represented as an enum type');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
@@ -65,7 +65,7 @@ describe('analyzePotentialEnumColumns', () => {
     (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnsData);
 
-    const result = await analyzePotentialEnumColumns(pool, 'empty_table');
+    const result = await analysePotentialEnumColumns(pool, 'empty_table');
     expect(result).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(1);
   });

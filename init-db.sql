@@ -1,6 +1,6 @@
--- init-db.sql test script for the SQL Database Analyzer
+-- init-db.sql test script for the SQL Database Analyser
 
--- Creates a table with data types that could be optimized
+-- Creates a table with data types that could be optimised
 CREATE TABLE employee (
     id SERIAL PRIMARY KEY,
     name TEXT,
