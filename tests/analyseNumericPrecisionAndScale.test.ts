@@ -1,6 +1,6 @@
 // tests/analyzeNumericPrecisionAndScale.test.ts
 import { Pool } from 'pg';
-import { analyzeNumericPrecisionAndScale } from '../src/analyses/analyseNumericPositionAndScale';
+import { analyseNumericPrecisionAndScale } from '../src/analyses/analyseNumericPositionAndScale';
 
 jest.mock('pg', () => {
   const mPool = {
@@ -32,7 +32,7 @@ describe('analyzeNumericPrecisionAndScale', () => {
       .mockResolvedValueOnce(mockColumnDetails) // Mock response for column details
       .mockResolvedValueOnce(mockMaxPrecisionAndScale); // Mock response for precision and scale calculation
 
-    const result = await analyzeNumericPrecisionAndScale(pool, 'financials');
+    const result = await analyseNumericPrecisionAndScale(pool, 'financials');
     expect(result).toContain('has defined numeric precision of 10 which could potentially be reduced to 5');
     expect(result).toContain('has defined numeric scale of 2 which could potentially be reduced to 1');
     expect(pool.query).toHaveBeenCalledTimes(2);
@@ -52,7 +52,7 @@ describe('analyzeNumericPrecisionAndScale', () => {
       .mockResolvedValueOnce(mockColumnDetails) // Mock response for column details
       .mockResolvedValueOnce(mockMaxPrecisionAndScale); // Mock response for precision and scale calculation
 
-    const result = await analyzeNumericPrecisionAndScale(pool, 'financials');
+    const result = await analyseNumericPrecisionAndScale(pool, 'financials');
     expect(result).not.toContain('which could potentially be reduced');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
@@ -65,7 +65,7 @@ describe('analyzeNumericPrecisionAndScale', () => {
     (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnDetails); // Mock response for column details with no matching columns
 
-    const result = await analyzeNumericPrecisionAndScale(pool, 'empty_table');
+    const result = await analyseNumericPrecisionAndScale(pool, 'empty_table');
     expect(result).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(1);
   });

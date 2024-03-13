@@ -1,6 +1,6 @@
 // tests/analyzeIndexUsage.test.ts
 import { Pool } from 'pg';
-import { analyzeIndexUsageAndTypes } from '../src/analyses/analyseIndexUsage';
+import { analyseIndexUsageAndTypes } from '../src/analyses/analyseIndexUsage';
 
 jest.mock('pg', () => {
   const mPool = {
@@ -47,7 +47,7 @@ describe('analyzeIndexUsageAndTypes', () => {
       .mockResolvedValueOnce(mockPotentialGiSTData) // For potential GiST indexes
       .mockResolvedValueOnce(mockFKColumnsWithoutIndexData); // For FK columns without index
 
-    const result = await analyzeIndexUsageAndTypes(pool);
+    const result = await analyseIndexUsageAndTypes(pool);
 
     expect(result).toContain('has very low usage');
     expect(result).toContain('Duplicate indexes found');

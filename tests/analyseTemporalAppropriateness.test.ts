@@ -1,6 +1,6 @@
 // tests/analyzeTemporalAppropriateness.test.ts
 import { Pool } from 'pg';
-import { analyzeTemporalDataTypeAppropriateness } from '../src/analyses/analyseTemporalAppropriateness';
+import { analyseTemporalDataTypeAppropriateness } from '../src/analyses/analyseTemporalAppropriateness';
 
 jest.mock('pg', () => {
   const mPool = {
@@ -27,7 +27,7 @@ describe('analyzeTemporalDataTypeAppropriateness', () => {
 
     (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
-    const result = await analyzeTemporalDataTypeAppropriateness(pool, 'events');
+    const result = await analyseTemporalDataTypeAppropriateness(pool, 'events');
     expect(result).toContain("Consider if 'with time zone' might be more appropriate for time zone awareness");
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
@@ -41,7 +41,7 @@ describe('analyzeTemporalDataTypeAppropriateness', () => {
 
     (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
-    const result = await analyzeTemporalDataTypeAppropriateness(pool, 'events');
+    const result = await analyseTemporalDataTypeAppropriateness(pool, 'events');
     expect(result).not.toContain("Consider if 'with time zone' might be more appropriate for time zone awareness");
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
@@ -53,7 +53,7 @@ describe('analyzeTemporalDataTypeAppropriateness', () => {
 
     (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
-    const result = await analyzeTemporalDataTypeAppropriateness(pool, 'empty_table');
+    const result = await analyseTemporalDataTypeAppropriateness(pool, 'empty_table');
     expect(result).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(1);
   });

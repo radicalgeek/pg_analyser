@@ -1,6 +1,6 @@
 // tests/analyzeUnusedAndRarelyUsedColumns.test.ts
 import { Pool } from 'pg';
-import { analyzeUnusedOrRarelyUsedColumns } from '../src/analyses/analyseUnusedAndRarelyUsedColumns';
+import { analyseUnusedOrRarelyUsedColumns } from '../src/analyses/analyseUnusedAndRarelyUsedColumns';
 
 jest.mock('pg', () => {
   const mPool = {
@@ -31,7 +31,7 @@ describe('analyzeUnusedOrRarelyUsedColumns', () => {
       .mockResolvedValueOnce(mockColumnsData) // Mock response for column details
       .mockResolvedValueOnce(mockColumnUsageData); // Mock response for column usage
 
-    const result = await analyzeUnusedOrRarelyUsedColumns(pool, 'test_table');
+    const result = await analyseUnusedOrRarelyUsedColumns(pool, 'test_table');
     expect(result).toContain('is rarely used or mostly null (3% non-null values)');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
@@ -48,7 +48,7 @@ describe('analyzeUnusedOrRarelyUsedColumns', () => {
       .mockResolvedValueOnce(mockColumnsData) // Mock response for column details
       .mockResolvedValueOnce(mockColumnUsageData); // Mock response for column usage
 
-    const result = await analyzeUnusedOrRarelyUsedColumns(pool, 'test_table');
+    const result = await analyseUnusedOrRarelyUsedColumns(pool, 'test_table');
     expect(result).toContain('might be overusing a default value (only 1 unique value across non-null entries)');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
@@ -65,7 +65,7 @@ describe('analyzeUnusedOrRarelyUsedColumns', () => {
       .mockResolvedValueOnce(mockColumnsData) // Mock response for column details
       .mockResolvedValueOnce(mockColumnUsageData); // Mock response for column usage
 
-    const result = await analyzeUnusedOrRarelyUsedColumns(pool, 'test_table');
+    const result = await analyseUnusedOrRarelyUsedColumns(pool, 'test_table');
     expect(result).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
