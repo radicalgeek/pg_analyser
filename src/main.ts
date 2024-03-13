@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import client from './utils/dbClient';
+import pool from './utils/dbClient';
 import { analyzeTextAndBinaryDataLength } from './analyses/analyseDataLength';
 import { analyzePotentialEnumColumns } from './analyses/analyseEnumConsistency';
 import { analyzeNumericPrecisionAndScale } from './analyses/analyseNumericPositionAndScale';
@@ -22,12 +22,7 @@ app.get('/analyze', async (req: any, res: { send: (arg0: string) => void; }) => 
     let analysisResults = '';
   
     try {
-      await client.connect().catch(error => {
-        console.log("Connection attempt error:", error.message);
-    });
-
-
-      const resTables = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+      const resTables = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
       const tables = resTables.rows;
       
       // Perform analysis on each table
@@ -36,7 +31,7 @@ app.get('/analyze', async (req: any, res: { send: (arg0: string) => void; }) => 
         analysisResults += await analyzeTableColumns(table_name) + '\n';
       }
       // Perform analysis on the database
-      analysisResults += await analyzeIndexUsageAndTypes(client) + '\n';
+      analysisResults += await analyzeIndexUsageAndTypes(pool) + '\n';
     } catch (error) {
       console.error(`Database analysis failed: ${error}`);
       analysisResults += `Database analysis failed: ${error}`;
@@ -53,16 +48,16 @@ app.get('/analyze', async (req: any, res: { send: (arg0: string) => void; }) => 
 
 const analyzeTableColumns = async (table: string): Promise<string> => {
     const query = `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = $1`;
-    const res = await client.query(query, [table]);
+    const res = await pool.query(query, [table]);
 
     let analysisResults = '';
 
-    analysisResults += await analyseColumnDataTypes(client, table) + '\n';
-    analysisResults += await analyzeTemporalDataTypeAppropriateness(client, table) + '\n';
-    analysisResults += await analyzeTextAndBinaryDataLength(client, table) + '\n';
-    analysisResults += await analyzePotentialEnumColumns(client, table) + '\n';
-    analysisResults += await analyzeNumericPrecisionAndScale(client, table) + '\n';
-    analysisResults += await analyzeUnusedOrRarelyUsedColumns(client, table) + '\n';
+    analysisResults += await analyseColumnDataTypes(pool, table) + '\n';
+    analysisResults += await analyzeTemporalDataTypeAppropriateness(pool, table) + '\n';
+    analysisResults += await analyzeTextAndBinaryDataLength(pool, table) + '\n';
+    analysisResults += await analyzePotentialEnumColumns(pool, table) + '\n';
+    analysisResults += await analyzeNumericPrecisionAndScale(pool, table) + '\n';
+    analysisResults += await analyzeUnusedOrRarelyUsedColumns(pool, table) + '\n';
 
     return analysisResults;
   };

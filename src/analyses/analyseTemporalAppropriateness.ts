@@ -1,6 +1,6 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
-export async function analyzeTemporalDataTypeAppropriateness(client: Client, table: string): Promise<string> {
+export async function analyzeTemporalDataTypeAppropriateness(pool: Pool, table: string): Promise<string> {
 
   let result = '<h2>Temporal Data Type Appropriateness Analysis</h2>';
 
@@ -11,7 +11,7 @@ export async function analyzeTemporalDataTypeAppropriateness(client: Client, tab
       AND data_type IN ('date', 'time', 'time without time zone', 'time with time zone', 
                         'timestamp', 'timestamp without time zone', 'timestamp with time zone')`;
 
-  const resColumns = await client.query(queryColumns, [table]);
+  const resColumns = await pool.query(queryColumns, [table]);
   const columns = resColumns.rows;
 
   for (const { column_name, data_type } of columns) {
