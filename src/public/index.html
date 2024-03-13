@@ -68,15 +68,22 @@
     <div class="footer">
         &copy; 2024 Mark Jones - Radical Geek Technology Solutions. All rights reserved.
     </div>
-
+    <script src="/socket.io/socket.io.js"></script>
     <script>
+        const socket = io(); // Connect to the server
+
         document.getElementById('analyzeButton').addEventListener('click', function() {
-            fetch('/analyze')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('results').innerHTML = data;
-                })
-                .catch(error => console.error('Error:', error));
+        socket.emit('startAnalysis'); // Request to start analysis
+        // Display animation or loading indicator
+        document.getElementById('results').innerHTML = '<div>analysing...</div>';
+        });
+
+        socket.on('analysisComplete', (data) => {
+        document.getElementById('results').innerHTML = data;
+        });
+
+        socket.on('error', (errorMessage) => {
+        document.getElementById('results').innerHTML = errorMessage;
         });
     </script>
 </body>
