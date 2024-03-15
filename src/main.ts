@@ -11,6 +11,14 @@ import { analyseColumnDataTypes } from './analyses/analyseColumnDataTypes';
 import { analyseTemporalDataTypeAppropriateness as analyseTemporalDataTypeAppropriateness } from './analyses/analyseTemporalAppropriateness';
 import { analyseUnusedOrRarelyUsedColumns as analyseUnusedOrRarelyUsedColumns } from './analyses/analyseUnusedAndRarelyUsedColumns';
 import { analyseIndexUsageAndTypes as analyseIndexUsageAndTypes } from './analyses/analyseIndexUsage';
+import { analyseSuperuserAccess } from './analyses/analyseSuperuserAccess';
+import { analyseSensitiveDataExposure } from './analyses/analyseSensitiveDataExposure';
+import { analyseDataInTransitEncryption } from './analyses/analyseDataInTransitEncryption';
+import { analyseDataAtRestEncryption } from './analyses/analyseDataAtRestEncryption';
+import { analyseDefaultAccounts } from './analyses/analyseDefaultAccounts';
+import { analyseLoggingAndAuditing } from './analyses/analyseLoggingAndAuditing';
+import { analysePasswordPolicy } from './analyses/analysePasswordPolicy';
+import { analyseRolesPermissionsAndDatabases } from './analyses/analyseRolesPermissionsAndDatabases';
 
 
 const app = express();
@@ -43,6 +51,15 @@ io.on('connection', (socket) => {
         }
         // Perform analysis on the database
         analysisResults += await analyseIndexUsageAndTypes(pool) + '\n';
+        analysisResults += await analyseSuperuserAccess(pool) + '\n';
+        analysisResults += await analyseDefaultAccounts(pool) + '\n';
+        analysisResults += await analyseRolesPermissionsAndDatabases(pool) + '\n';
+        analysisResults += await analysePasswordPolicy(pool) + '\n';
+        analysisResults += await analyseLoggingAndAuditing(pool) + '\n';
+        analysisResults += await analyseSensitiveDataExposure(pool) + '\n';
+        analysisResults += await analyseDataInTransitEncryption(pool) + '\n';
+        analysisResults += await analyseDataAtRestEncryption(pool) + '\n';
+        
         socket.emit('analysisComplete', `<pre>${analysisResults}</pre>`);
       } catch (error) {
         console.error(`Database analysis failed: ${error}`);

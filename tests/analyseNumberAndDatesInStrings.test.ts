@@ -1,4 +1,4 @@
-// tests/analyzeNumberAndDatesInStrings.test.ts
+// tests/analyseNumberAndDatesInStrings.test.ts
 import { Pool } from 'pg';
 import { analyseColumnDataTypes } from '../src/analyses/analyseColumnDataTypes';
 
@@ -11,7 +11,7 @@ jest.mock('pg', () => {
   return { Pool: jest.fn(() => mPool) };
 });
 
-describe('analyzeNumberDateBooleanInStringOrNumberColumns', () => {
+describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
   let pool: Pool;
 
   beforeEach(() => {
