@@ -1,4 +1,4 @@
-// tests/analyzeUnusedAndRarelyUsedColumns.test.ts
+// tests/analyseUnusedAndRarelyUsedColumns.test.ts
 import { Pool } from 'pg';
 import { analyseUnusedOrRarelyUsedColumns } from '../src/analyses/analyseUnusedAndRarelyUsedColumns';
 
@@ -11,7 +11,7 @@ jest.mock('pg', () => {
   return { Pool: jest.fn(() => mPool) };
 });
 
-describe('analyzeUnusedOrRarelyUsedColumns', () => {
+describe('analyseUnusedOrRarelyUsedColumns', () => {
   let pool: Pool;
 
   beforeEach(() => {

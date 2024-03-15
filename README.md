@@ -19,6 +19,22 @@
 
 6. **Consistent Use of Enums**: Identifies columns that could benefit from being converted to enum types, based on the repetition of a limited set of string values.
 
+7. **Overuse of Superuser Accounts**: Highlights superuser accounts, which have unrestricted access to the database, that may be being utilised for regular database access, potentially posing a security risk.
+
+8. **Identification of Default User Accounts**: Scans for user accounts that appear to be unchanged defaults, which may still use predictable or widely-known passwords, presenting an easy target for unauthorised access.
+
+9. **Comprehensive Role Permissions Review**: Analyses roles within the database to flag any with overly broad permissions, reducing the principle of least privilege and potentially exposing sensitive data or operations to a wider range of users than necessary.
+
+10. **Enforcement of Strong Password Policies**: Evaluates the database's password policy settings to ensure strong passwords are enforced, reducing the risk of compromise through brute force or dictionary attacks.
+
+11. **Optimal Logging and Auditing Practices**: Assesses the database's logging and auditing configurations to ensure that significant actions and transactions are properly recorded, aiding in security audits and forensic analysis.
+
+12. **Identification of Columns with Sensitive Data**: Scans for columns that are likely to store sensitive information, such as passwords, tokens, and API keys, to ensure that appropriate security measures, like encryption and access controls, are in place.
+
+13. **Verification of Data-in-Transit Encryption**: Checks for configurations that ensure data being transferred to and from the database is encrypted, protecting against eavesdropping and man-in-the-middle attacks.
+
+14. **Assessment of Data-at-Rest Encryption**:  Reviews the database for indications that data stored is encrypted, safeguarding against unauthorised access to data by bypassing database security controls, such as through direct file system access.
+
 ## Getting Started
 
 ### Prerequisites

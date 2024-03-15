@@ -1,4 +1,4 @@
-// tests/analyzeNumericPrecisionAndScale.test.ts
+// tests/analyseNumericPrecisionAndScale.test.ts
 import { Pool } from 'pg';
 import { analyseNumericPrecisionAndScale } from '../src/analyses/analyseNumericPositionAndScale';
 
@@ -11,14 +11,14 @@ jest.mock('pg', () => {
   return { Pool: jest.fn(() => mPool) };
 });
 
-describe('analyzeNumericPrecisionAndScale', () => {
+describe('analyseNumericPrecisionAndScale', () => {
   let pool: Pool;
 
   beforeEach(() => {
     pool = new Pool();
   });
 
-  it('should suggest precision and scale optimizations for numeric columns', async () => {
+  it('should suggest precision and scale optimisations for numeric columns', async () => {
     const mockColumnDetails = {
       rows: [
         { column_name: 'amount', numeric_precision: 10, numeric_scale: 2 }

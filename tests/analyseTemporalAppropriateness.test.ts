@@ -1,4 +1,4 @@
-// tests/analyzeTemporalAppropriateness.test.ts
+// tests/analyseTemporalAppropriateness.test.ts
 import { Pool } from 'pg';
 import { analyseTemporalDataTypeAppropriateness } from '../src/analyses/analyseTemporalAppropriateness';
 
@@ -11,7 +11,7 @@ jest.mock('pg', () => {
   return { Pool: jest.fn(() => mPool) };
 });
 
-describe('analyzeTemporalDataTypeAppropriateness', () => {
+describe('analyseTemporalDataTypeAppropriateness', () => {
   let pool: Pool;
 
   beforeEach(() => {

@@ -1,4 +1,4 @@
-// tests/analyzeEnumConsistency.test.ts
+// tests/analyseEnumConsistency.test.ts
 import { Pool } from 'pg';
 import { analysePotentialEnumColumns } from '../src/analyses/analyseEnumConsistency';
 
@@ -11,7 +11,7 @@ jest.mock('pg', () => {
   return { Pool: jest.fn(() => mPool) };
 });
 
-describe('analyzePotentialEnumColumns', () => {
+describe('analysePotentialEnumColumns', () => {
   let pool: Pool;
   
   beforeEach(() => {
