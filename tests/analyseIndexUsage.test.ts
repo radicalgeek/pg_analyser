@@ -1,4 +1,4 @@
-// tests/analyzeIndexUsage.test.ts
+// tests/analyseIndexUsage.test.ts
 import { Pool } from 'pg';
 import { analyseIndexUsageAndTypes } from '../src/analyses/analyseIndexUsage';
 
@@ -11,7 +11,7 @@ jest.mock('pg', () => {
   return { Pool: jest.fn(() => mPool) };
 });
 
-describe('analyzeIndexUsageAndTypes', () => {
+describe('analyseIndexUsageAndTypes', () => {
   let pool: Pool;
   
   beforeEach(() => {
