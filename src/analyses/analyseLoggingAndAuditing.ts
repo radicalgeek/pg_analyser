@@ -1,7 +1,11 @@
 import { Pool } from 'pg';
+import { AnalysisResult } from '../types/analysisResult';
 
-export async function analyseLoggingAndAuditing(pool: Pool): Promise<string> {
-  let result = '<h2>Logging and Auditing Analysis</h2>';
+export async function analyseLoggingAndAuditing(pool: Pool): Promise<AnalysisResult> {
+  let result: AnalysisResult = {
+    title: `Logging and Auditing Analysis`,
+    messages: []
+  };
 
   const loggingSettings = [
     'log_connections',
@@ -27,14 +31,14 @@ export async function analyseLoggingAndAuditing(pool: Pool): Promise<string> {
       const query = `SELECT name, setting FROM pg_settings WHERE name = $1;`;
       const { rows } = await pool.query(query, [setting]);
       if (rows.length > 0) {
-        result += `${setting}: ${rows[0].setting}\n`;
+        result.messages.push(`${setting}: ${rows[0].setting}`);
       } else {
-        result += `${setting}: Not found\n`;
+        result.messages.push(`${setting}: Not found`);
       }
     }
   } catch (error) {
     console.error(`Error during logging and auditing analysis: ${error}`);
-    result += 'An error occurred while analysing logging and auditing settings.\n';
+    result.messages.push('An error occurred while analysing logging and auditing settings.');
   }
 
   return result;

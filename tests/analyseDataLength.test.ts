@@ -34,7 +34,7 @@ describe('analyseTextAndBinaryDataLength', () => {
         .mockResolvedValueOnce(mockLengthDataBytea); // Third call for the 'test_bytea' column
 
     const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
-    expect(result).toContain('has maximum length of data: 100');
+    expect(result.messages.some(message => message.includes('has maximum length of data: 100')))
     expect(pool.query).toHaveBeenCalledTimes(3);
 });
 
@@ -52,7 +52,7 @@ describe('analyseTextAndBinaryDataLength', () => {
 
 
     const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
-    expect(result).toContain('could potentially be reduced to 50');
+    expect(result.messages.some(message => message.includes('could potentially be reduced to 50')));
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -60,7 +60,7 @@ describe('analyseTextAndBinaryDataLength', () => {
     (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [] }); 
 
     const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
-    expect(result).toContain('No Issues Found.');
+    expect(result.messages).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 

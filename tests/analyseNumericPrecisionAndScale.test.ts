@@ -33,8 +33,8 @@ describe('analyseNumericPrecisionAndScale', () => {
       .mockResolvedValueOnce(mockMaxPrecisionAndScale); // Mock response for precision and scale calculation
 
     const result = await analyseNumericPrecisionAndScale(pool, 'financials');
-    expect(result).toContain('has defined numeric precision of 10 which could potentially be reduced to 5');
-    expect(result).toContain('has defined numeric scale of 2 which could potentially be reduced to 1');
+    expect(result.messages.some(message => message.includes('has defined numeric precision of 10 which could potentially be reduced to 5')));
+    expect(result.messages.some(message => message.includes('has defined numeric scale of 2 which could potentially be reduced to 1')))
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -53,7 +53,7 @@ describe('analyseNumericPrecisionAndScale', () => {
       .mockResolvedValueOnce(mockMaxPrecisionAndScale); // Mock response for precision and scale calculation
 
     const result = await analyseNumericPrecisionAndScale(pool, 'financials');
-    expect(result).not.toContain('which could potentially be reduced');
+    expect(result.messages).not.toContain('which could potentially be reduced');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -66,7 +66,7 @@ describe('analyseNumericPrecisionAndScale', () => {
       .mockResolvedValueOnce(mockColumnDetails); // Mock response for column details with no matching columns
 
     const result = await analyseNumericPrecisionAndScale(pool, 'empty_table');
-    expect(result).toContain('No Issues Found.');
+    expect(result.messages.some(message => message.includes('No Issues Found.')));
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 

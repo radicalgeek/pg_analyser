@@ -1,8 +1,11 @@
 import { Pool } from 'pg';
+import { AnalysisResult } from '../types/analysisResult';
 
-export async function analyseIndexUsageAndTypes(pool: Pool): Promise<string> {
-
-  let result = '<h2>Index Usage and Types Analysis</h2>';
+export async function analyseIndexUsageAndTypes(pool: Pool): Promise<AnalysisResult> {
+  let result: AnalysisResult = {
+    title: `Index Usage and Types Analysis`,
+    messages: []
+  };
   const unusedIndexThreshold = parseInt(process.env.UNUSED_INDEX_THRESHOLD || '50');
 
   try {
@@ -20,11 +23,11 @@ export async function analyseIndexUsageAndTypes(pool: Pool): Promise<string> {
 
     const resUnusedIndexes = await pool.query(queryUnusedIndexes);
     for (const row of resUnusedIndexes.rows) {
-      result += `Index '${row.index_name}' on table '${row.table_name}' has very low usage (${row.index_scans} scans). Consider if it's necessary.` + '\n';
+      result.messages.push(`Index '${row.index_name}' on table '${row.table_name}' has very low usage (${row.index_scans} scans). Consider if it's necessary.`);
     }
   } catch (error) {
     console.error('Error during the unused index analysis:', error);
-    result += 'Error during the unused index analysis.' + '\n';
+    result.messages.push('Error during the unused index analysis.');
   }
 
 
@@ -41,11 +44,11 @@ export async function analyseIndexUsageAndTypes(pool: Pool): Promise<string> {
 
       const resDuplicateIndexes = await pool.query(queryDuplicateIndexes);
       for (const row of resDuplicateIndexes.rows) {
-        result += `Duplicate indexes found on table ${row.table}: ${row.duplicate_indexes.join(', ')}. Consider removing redundant indexes.` + '\n';
+        result.messages.push(`Duplicate indexes found on table ${row.table}: ${row.duplicate_indexes.join(', ')}. Consider removing redundant indexes.`);
       }
   } catch (error) {
     console.error('Error during the duplicate index analysis:', error);
-    result += 'Error during the duplicate index analysis.' + '\n';
+    result.messages.push('Error during the duplicate index analysis.');
   }
 
   try {
@@ -60,11 +63,11 @@ export async function analyseIndexUsageAndTypes(pool: Pool): Promise<string> {
 
     const resPotentialGIN = await pool.query(queryPotentialGINIndexes);
     for (const row of resPotentialGIN.rows) {
-      result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a GIN index for improved search performance.` + '\n';
+      result.messages.push(`Column '${row.column_name}' on table '${row.table_name}' might benefit from a GIN index for improved search performance.`);
     }
   } catch (error) {
     console.error('Error during the GIN index analysis:', error);
-    result += 'Error during the GIN index analysis.' + '\n';
+    result.messages.push('Error during the GIN index analysis.');
   }
 
   try {
@@ -83,11 +86,11 @@ export async function analyseIndexUsageAndTypes(pool: Pool): Promise<string> {
   
     const resPotentialBRIN  = await pool.query(queryBRINCandidateColumns);
     for (const row of resPotentialBRIN.rows) {
-      result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a BRIN index for faster queries on large, naturally ordered datasets.` + '\n';
+      result.messages.push(`Column '${row.column_name}' on table '${row.table_name}' might benefit from a BRIN index for faster queries on large, naturally ordered datasets.`);
     }
   } catch (error) {
     console.error('Error during the BRIN index analysis:', error);
-    result += 'Error during the BRIN index analysis.' + '\n';
+    result.messages.push('Error during the BRIN index analysis.');
   }
    
   try {
@@ -100,11 +103,11 @@ export async function analyseIndexUsageAndTypes(pool: Pool): Promise<string> {
 
     const resPotentialGiST = await pool.query(queryGiSTCandidateColumns);
     for (const row of resPotentialGiST.rows) {
-      result += `Column '${row.column_name}' on table '${row.table_name}' might benefit from a GiST index for efficient geometric operations.` + '\n';
+      result.messages.push(`Column '${row.column_name}' on table '${row.table_name}' might benefit from a GiST index for efficient geometric operations.`);
     }
   } catch (error) {
     console.error('Error during the GiST index analysis:', error);
-    result += 'Error during the GiST index analysis.' + '\n';
+    result.messages.push('Error during the GiST index analysis.');
   }
 
   try{
@@ -123,15 +126,15 @@ export async function analyseIndexUsageAndTypes(pool: Pool): Promise<string> {
 
     const resForeignKeys = await pool.query(queryFKColumnsWithoutIndex);
     for (const row of resForeignKeys.rows) {
-      result += `Foreign key column '${row.column_name}' on table '${row.table_schema}.${row.table_name}' is not indexed. Consider adding an index to improve performance.` + '\n';
+      result.messages.push(`Foreign key column '${row.column_name}' on table '${row.table_schema}.${row.table_name}' is not indexed. Consider adding an index to improve performance.`);
     }
   } catch (error) {
     console.error('Error during the foreign key index analysis:', error);
-    result += 'Error during the foreign key index analysis.' + '\n';
+    result.messages.push('Error during the foreign key index analysis.');
   }
 
-  if (result === '<h2>Index Usage and Types Analysis</h2>') {
-    result += 'No Issues Found.';
+  if (result.messages.length === 0) {
+    result.messages.push('No Issues Found.');
   }
   return result;
 }

@@ -32,7 +32,7 @@ describe('analyseUnusedOrRarelyUsedColumns', () => {
       .mockResolvedValueOnce(mockColumnUsageData); // Mock response for column usage
 
     const result = await analyseUnusedOrRarelyUsedColumns(pool, 'test_table');
-    expect(result).toContain('is rarely used or mostly null (3% non-null values)');
+    expect(result.messages.some(message => message.includes('is rarely used or mostly null (3% non-null values)')));
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -49,7 +49,7 @@ describe('analyseUnusedOrRarelyUsedColumns', () => {
       .mockResolvedValueOnce(mockColumnUsageData); // Mock response for column usage
 
     const result = await analyseUnusedOrRarelyUsedColumns(pool, 'test_table');
-    expect(result).toContain('might be overusing a default value (only 1 unique value across non-null entries)');
+    expect(result.messages.some(message => message.includes('might be overusing a default value (only 1 unique value across non-null entries)')));
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -66,7 +66,7 @@ describe('analyseUnusedOrRarelyUsedColumns', () => {
       .mockResolvedValueOnce(mockColumnUsageData); // Mock response for column usage
 
     const result = await analyseUnusedOrRarelyUsedColumns(pool, 'test_table');
-    expect(result).toContain('No Issues Found.');
+    expect(result.messages).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 

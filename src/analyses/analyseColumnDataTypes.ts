@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { AnalysisResult } from '../types/analysisResult';
 
 const isNumber = (value: string): boolean => !isNaN(Number(value));
 
@@ -9,8 +10,11 @@ const isBooleanLike = (value: string): boolean => {
   return lowerValue === 'yes' || lowerValue === 'no' || lowerValue === 'true' || lowerValue === 'false' || lowerValue === '1' || lowerValue === '0';
 };
 
-export const analyseColumnDataTypes = async (pool: Pool, table: string): Promise<string> => {
-  let result = '<h2>Column Type Analysis</h2>';
+export const analyseColumnDataTypes = async (pool: Pool, table: string): Promise<AnalysisResult> => {
+  let result: AnalysisResult = {
+    title: `Column Type Analysis`,
+    messages: []
+  };
 
   try {
     const queryColumns = `
@@ -31,13 +35,13 @@ export const analyseColumnDataTypes = async (pool: Pool, table: string): Promise
       const allBooleanLike = rows.every(row => row[column_name] !== null && isBooleanLike(row[column_name].toString()));
 
       if ((data_type.includes('character') || data_type === 'text') && allBooleanLike) {
-        result += `Column '${column_name}' in table '${table}' might be better as a boolean type.` + '\n';
+        result.messages.push(`Column '${column_name}' in table '${table}' might be better as a boolean type.`);
       } else if (allNumbers || allDates) {
-        result += `Column '${column_name}' in table '${table}' might be better as a numeric or date type.` + '\n';
+        result.messages.push(`Column '${column_name}' in table '${table}' might be better as a numeric or date type.`);
       }
 
       if ((data_type === 'numeric' || data_type === 'decimal' || data_type === 'integer' || data_type === 'bigint') && allBooleanLike) {
-        result += `Numeric column '${column_name}' in table '${table}' might be better as a boolean type (contains only 0 and 1).` + '\n';
+        result.messages.push(`Numeric column '${column_name}' in table '${table}' might be better as a boolean type (contains only 0 and 1).`);
       }
     }
   } catch (error) {
@@ -46,11 +50,11 @@ export const analyseColumnDataTypes = async (pool: Pool, table: string): Promise
     } else {
       console.error("An unknown error occurred during column data type analysis.");
     }
-    result += `Error during column data type analysis.` + '\n';
+    result.messages.push(`Error during column data type analysis.`);
   }
 
-  if (result === '<h2>Column Type Analysis</h2>') {
-    result += 'No Issues Found.';
+  if (result.messages.length === 0) {
+    result.messages.push('No Issues Found.');
   }
   return result;
 };

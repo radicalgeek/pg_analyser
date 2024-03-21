@@ -34,7 +34,7 @@ describe('analysePotentialEnumColumns', () => {
       .mockResolvedValueOnce(mockDistinctValuesData); // Second call for distinct values count
 
     const result = await analysePotentialEnumColumns(pool, 'order_status');
-    expect(result).toContain('might be better represented as an enum type');
+    expect(result.messages.some(message => message.includes('might be better represented as an enum type')));
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -53,7 +53,7 @@ describe('analysePotentialEnumColumns', () => {
       .mockResolvedValueOnce(mockDistinctValuesData); // Second call for distinct values count
 
     const result = await analysePotentialEnumColumns(pool, 'product_info');
-    expect(result).not.toContain('might be better represented as an enum type');
+    expect(result.messages).not.toContain('might be better represented as an enum type');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -66,7 +66,7 @@ describe('analysePotentialEnumColumns', () => {
       .mockResolvedValueOnce(mockColumnsData);
 
     const result = await analysePotentialEnumColumns(pool, 'empty_table');
-    expect(result).toContain('No Issues Found.');
+    expect(result.messages).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 

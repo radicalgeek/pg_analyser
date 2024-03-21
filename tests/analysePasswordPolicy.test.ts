@@ -24,8 +24,8 @@ describe('analysePasswordPolicy', () => {
 
     const result = await analysePasswordPolicy(pool);
 
-    expect(result).toContain('Password policy module (passwordcheck) is enabled');
-    expect(result).toContain('Audit logging module (pgAudit) is enabled');
+    expect(result.messages.some(message => message.includes('Password policy module (passwordcheck) is enabled')));
+    expect(result.messages.some(message => message.includes('Audit logging module (pgAudit) is enabled')));
   });
 
   it('should detect when passwordcheck and pgaudit are not enabled', async () => {
@@ -36,8 +36,8 @@ describe('analysePasswordPolicy', () => {
 
     const result = await analysePasswordPolicy(pool);
 
-    expect(result).toContain('Password policy module (passwordcheck) is not enabled');
-    expect(result).toContain('Audit logging module (pgAudit) is not enabled');
+    expect(result.messages.some(message => message.includes('Password policy module (passwordcheck) is not enabled')));
+    expect(result.messages.some(message => message.includes('Audit logging module (pgAudit) is not enabled')));
   });
 
   it('should handle errors gracefully', async () => {
@@ -45,7 +45,7 @@ describe('analysePasswordPolicy', () => {
 
     const result = await analysePasswordPolicy(pool);
 
-    expect(result).toContain('An error occurred while analysing password policies and security modules.');
+    expect(result.messages).toContain('An error occurred while analysing password policies and security modules.');
   });
 
   afterEach(() => {

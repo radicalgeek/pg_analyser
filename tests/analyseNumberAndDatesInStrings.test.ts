@@ -31,7 +31,7 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
       .mockResolvedValueOnce(mockRowsData); // Second call for column data
 
     const result = await analyseColumnDataTypes(pool, 'test_table');
-    expect(result).toContain('might be better as a numeric or date type');
+    expect(result.messages.some(message => message.includes('might be better as a numeric or date type')));
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -48,7 +48,7 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
       .mockResolvedValueOnce(mockRowsData); // Second call for column data
 
     const result = await analyseColumnDataTypes(pool, 'test_table');
-    expect(result).toContain('might be better as a numeric or date type');
+    expect(result.messages.some(message => message.includes('might be better as a numeric or date type')));
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -65,7 +65,7 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
       .mockResolvedValueOnce(mockRowsData); // Second call for column data
 
     const result = await analyseColumnDataTypes(pool, 'test_table');
-    expect(result).toContain('No Issues Found.');
+    expect(result.messages).toContain('No Issues Found.');
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -82,7 +82,7 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
       .mockResolvedValueOnce(mockRowsDataForStringBool); // Second call for column data
 
     const result = await analyseColumnDataTypes(pool, 'test_table');
-    expect(result).toContain('might be better as a boolean type');
+    expect(result.messages.some(message => message.includes('might be better as a boolean type')));
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -100,7 +100,7 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
       .mockResolvedValueOnce(mockRowsDataForNumericBool); // Second call for column data
 
     const result = await analyseColumnDataTypes(pool, 'test_table'); // Assuming the function name reflects its broader analysis scope
-    expect(result).toContain('Numeric column \'bool_numeric_column\' in table \'test_table\' might be better as a boolean type (contains only 0 and 1)');
+    expect(result.messages.some(message => message.includes('Numeric column \'bool_numeric_column\' in table \'test_table\' might be better as a boolean type (contains only 0 and 1)')));
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 

@@ -1,7 +1,11 @@
 import { Pool } from 'pg';
+import { AnalysisResult } from '../types/analysisResult';
 
-export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<string> {
-  let result = '<h2>Roles, Permissions, and Database Access Analysis</h2>\n';
+export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<AnalysisResult> {
+  let result: AnalysisResult = {
+    title: `Roles, Permissions, and Database Access Analysis`,
+    messages: []
+  };
 
   const queryRoles = `
     SELECT rolname, rolsuper, rolcreaterole, rolcreatedb, rolcanlogin, oid
@@ -44,24 +48,24 @@ export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<s
       const permissionsRes = await pool.query(queryPermissions, [role.rolname]);
       const accessibleDbs = dbRes.rows.map(row => row.datname).join(', ');
 
-      result += `Role: ${role.rolname}\n`;
-      result += `Attributes: Superuser: ${role.rolsuper}, Can Login: ${role.rolcanlogin}\n`;
-      result += `Accessible Databases: ${accessibleDbs || 'None'}\n`;
+      result.messages.push(`Role: ${role.rolname}`);
+      result.messages.push(`Attributes: Superuser: ${role.rolsuper}, Can Login: ${role.rolcanlogin}`);
+      result.messages.push(`Accessible Databases: ${accessibleDbs || 'None'}`);
 
       if (permissionsRes.rows.length > 0) {
         permissionsRes.rows.forEach(({ schema, object, type, privileges }) => {
           const privilegesArray = privileges.replace('{', '').replace('}', '').split(',');
-          result += `- Permissions on ${schema}.${object} (${type}): ${privilegesArray.join(', ')}\n`;
+          result.messages.push(`- Permissions on ${schema}.${object} (${type}): ${privilegesArray.join(', ')}`);
         });
       } else {
-        result += 'No explicit permissions or inherited permissions on database objects.\n';
+        result.messages.push('No explicit permissions or inherited permissions on database objects.');
       }
 
-      result += '\n'; // Separate each role section
+
     }
   } catch (error) {
     console.error(`Error during roles, permissions, and database access analysis: ${error}`);
-    result += 'An error occurred while analysing roles, permissions, and database access\n';
+    result.messages.push('An error occurred while analysing roles, permissions, and database access');
   }
 
   return result;

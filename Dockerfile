@@ -6,4 +6,4 @@ RUN npm install
 RUN npm run build
 EXPOSE 3000
 EXPOSE 9229
-CMD ["node", "--inspect=0.0.0.0:9229", "src/main.js"]
+CMD ["node", "--inspect=0.0.0.0:9229", "src/main.js", "--server"]

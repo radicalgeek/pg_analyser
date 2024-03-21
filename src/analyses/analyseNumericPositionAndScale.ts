@@ -1,7 +1,11 @@
 import { Pool } from 'pg';
+import { AnalysisResult } from '../types/analysisResult';
 
-export async function analyseNumericPrecisionAndScale(pool: Pool, table: string): Promise<string> {
-  let result = '<h2>Numeric Precision and Scale Analysis</h2>';
+export async function analyseNumericPrecisionAndScale(pool: Pool, table: string): Promise<AnalysisResult> {
+  let result: AnalysisResult = {
+    title: `Numeric Precision and Scale Analysis`,
+    messages: []
+  };
 
   try {
     const query = `
@@ -33,24 +37,24 @@ export async function analyseNumericPrecisionAndScale(pool: Pool, table: string)
         const maxScale = dataRes.rows[0] ? dataRes.rows[0].max_scale : null;
 
         if (maxPrecision !== null && numeric_precision > maxPrecision) {
-          result += `Column '${column_name}' in table '${table}' has defined numeric precision of ${numeric_precision} which could potentially be reduced to ${maxPrecision}.` + '\n';
+          result.messages.push(`Column '${column_name}' in table '${table}' has defined numeric precision of ${numeric_precision} which could potentially be reduced to ${maxPrecision}.`);
         }
 
         if (maxScale !== null && numeric_scale > maxScale) {
-          result += `Column '${column_name}' in table '${table}' has defined numeric scale of ${numeric_scale} which could potentially be reduced to ${maxScale}.` + '\n';
+          result.messages.push(`Column '${column_name}' in table '${table}' has defined numeric scale of ${numeric_scale} which could potentially be reduced to ${maxScale}.`);
         }
       } catch (error) {
         console.error(`Error during numeric precision and scale analysis for column ${column_name}: ${error}`);
-        result += `Error during numeric precision and scale analysis for column ${column_name}:` + '\n';
+        result.messages.push(`Error during numeric precision and scale analysis for column ${column_name}:`);
       }
     }
   } catch (error) {
     console.error(`Error during the numeric precision and scale analysis: ${error}`);
-    return result += 'Error during the numeric precision and scale analysis.' + '\n';
+    result.messages.push('Error during the numeric precision and scale analysis.');
   }
 
-  if (result === '<h2>Numeric Precision and Scale Analysis</h2>') {
-    result += 'No Issues Found.';
+  if (result.messages.length === 0) {
+    result.messages.push('No Issues Found.');
   }
 
   return result;

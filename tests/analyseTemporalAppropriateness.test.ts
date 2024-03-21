@@ -28,7 +28,7 @@ describe('analyseTemporalDataTypeAppropriateness', () => {
     (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
     const result = await analyseTemporalDataTypeAppropriateness(pool, 'events');
-    expect(result).toContain("Consider if 'with time zone' might be more appropriate for time zone awareness");
+    expect(result.messages.some(message => message.includes("Consider if 'with time zone' might be more appropriate for time zone awareness")));
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 
@@ -42,7 +42,7 @@ describe('analyseTemporalDataTypeAppropriateness', () => {
     (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
     const result = await analyseTemporalDataTypeAppropriateness(pool, 'events');
-    expect(result).not.toContain("Consider if 'with time zone' might be more appropriate for time zone awareness");
+    expect(result.messages).not.toContain("Consider if 'with time zone' might be more appropriate for time zone awareness");
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 
@@ -54,7 +54,7 @@ describe('analyseTemporalDataTypeAppropriateness', () => {
     (pool.query as jest.Mock).mockResolvedValueOnce(mockColumnsData);
 
     const result = await analyseTemporalDataTypeAppropriateness(pool, 'empty_table');
-    expect(result).toContain('No Issues Found.');
+    expect(result.messages.some(message => message.includes('No Issues Found.')));
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 

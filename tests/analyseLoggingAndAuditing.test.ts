@@ -32,7 +32,7 @@ describe('analyseLoggingAndAuditing', () => {
 
     // Ensure all logging settings are queried and analysed correctly
     mockSettings.forEach(setting => {
-      expect(result).toContain(`${setting.name}: ${setting.setting}`);
+      expect(result.messages).toContain(`${setting.name}: ${setting.setting}`);
     });
 
     expect(pool.query).toHaveBeenCalledTimes(mockSettings.length +1);
@@ -43,7 +43,7 @@ describe('analyseLoggingAndAuditing', () => {
 
     const result = await analyseLoggingAndAuditing(pool);
 
-    expect(result).toContain('Not found');
+    expect(result.messages.some(message => message.includes('Not found')));
     expect(pool.query).toHaveBeenCalled();
   });
 
@@ -52,7 +52,7 @@ describe('analyseLoggingAndAuditing', () => {
 
     const result = await analyseLoggingAndAuditing(pool);
 
-    expect(result).toContain('An error occurred while analysing logging and auditing settings.');
+    expect(result.messages).toContain('An error occurred while analysing logging and auditing settings.');
     expect(pool.query).toHaveBeenCalled();
   });
 

@@ -1,7 +1,11 @@
 import { Pool } from 'pg';
+import { AnalysisResult } from '../types/analysisResult';
 
-export async function analyseTemporalDataTypeAppropriateness(pool: Pool, table: string): Promise<string> {
-  let result = '<h2>Temporal Data Type Appropriateness Analysis</h2>';
+export async function analyseTemporalDataTypeAppropriateness(pool: Pool, table: string): Promise<AnalysisResult> {
+  let result: AnalysisResult = {
+    title: `Temporal Data Type Appropriateness Analysis`,
+    messages: []
+  };
 
   try {
     const queryColumns = `
@@ -16,7 +20,7 @@ export async function analyseTemporalDataTypeAppropriateness(pool: Pool, table: 
 
     for (const { column_name, data_type } of columns) {
       if (data_type.includes('without time zone')) {
-        result += `Column '${column_name}' in table '${table}' uses '${data_type}'. Consider if 'with time zone' might be more appropriate for time zone awareness.` + '\n';
+        result.messages.push(`Column '${column_name}' in table '${table}' uses '${data_type}'. Consider if 'with time zone' might be more appropriate for time zone awareness.`);
       }
     }  
   } catch (error) {
@@ -26,10 +30,11 @@ export async function analyseTemporalDataTypeAppropriateness(pool: Pool, table: 
       console.error("An unknown error occurred during temporal data types analysis for table ${table}");
     }
     
-    result += `Error during temporal data types analysis for table ${table}.` + '\n';
+    result.messages.push(`Error during temporal data types analysis for table ${table}.`);
   }
-  if (result === '<h2>Temporal Data Type Appropriateness Analysis</h2>') {
-    result += 'No Issues Found.';
+  if (result.messages.length === 0) {
+    result.messages.push('No Issues Found.');
   }
+  
   return result;
 }

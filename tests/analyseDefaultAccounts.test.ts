@@ -24,7 +24,7 @@ describe('analyseDefaultAccounts', () => {
     (pool.query as jest.Mock).mockResolvedValueOnce(mockUserData);
 
     const result = await analyseDefaultAccounts(pool);
-    expect(result).toContain('Found common usernames that may have weak/default passwords: postgres, admin');
+    expect(result.messages.some(message => message.includes('Found common usernames that may have weak/default passwords: postgres, admin')));
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 
@@ -35,7 +35,7 @@ describe('analyseDefaultAccounts', () => {
     (pool.query as jest.Mock).mockResolvedValueOnce(mockUserData);
 
     const result = await analyseDefaultAccounts(pool);
-    expect(result).toContain('No common default usernames found');
+    expect(result.messages).toContain('No common default usernames found.');
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 
@@ -43,7 +43,7 @@ describe('analyseDefaultAccounts', () => {
     (pool.query as jest.Mock).mockRejectedValueOnce(new Error('Test error'));
 
     const result = await analyseDefaultAccounts(pool);
-    expect(result).toContain('An error occurred while reviewing default accounts');
+    expect(result.messages).toContain('An error occurred while reviewing default accounts.');
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 

@@ -1,7 +1,11 @@
 import { Pool } from 'pg';
+import { AnalysisResult } from '../types/analysisResult';
 
-export async function analysePotentialEnumColumns(pool: Pool, table: string): Promise<string> {
-  let result = '<h2>Potential Enum Columns Analysis</h2>';
+export async function analysePotentialEnumColumns(pool: Pool, table: string): Promise<AnalysisResult> {
+  let result: AnalysisResult = {
+    title: `Potential Enum Columns Analysis`,
+    messages: []
+  };
 
   try {
     const queryColumns = `
@@ -26,20 +30,20 @@ export async function analysePotentialEnumColumns(pool: Pool, table: string): Pr
         const distinctValuesCount = resDistinctValues.rowCount || 0;
 
         if (distinctValuesCount > 0 && distinctValuesCount <= enumThreshold) {
-          result += `Column '${column}' in table '${table}' has ${distinctValuesCount} distinct values and might be better represented as an enum type.` + '\n';
+          result.messages.push(`Column '${column}' in table '${table}' has ${distinctValuesCount} distinct values and might be better represented as an enum type.`);
         }
       } catch (error) {
         console.error(`Error during distinct values analysis for column ${column}:`, error);
-        return result += `Error during distinct values analysis for column ${column}.` + '\n';
+        result.messages.push(`Error during distinct values analysis for column ${column}.`);
       }
     }
   } catch (error) {
     console.error(`Error during potential enum columns analysis for table ${table}:`, error);
-    return result += `Error during potential enum columns analysis for table ${table}.`  + '\n';
+    result.messages.push(`Error during potential enum columns analysis for table ${table}.`);
   }
 
-  if (result === '<h2>Potential Enum Columns Analysis</h2>') {
-    result += 'No Issues Found.';
+  if (result.messages.length === 0) {
+    result.messages.push('No Issues Found.');
   }
   return result;
 }

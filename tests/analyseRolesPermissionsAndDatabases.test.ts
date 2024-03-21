@@ -43,9 +43,9 @@ describe('analyseRolesPermissionsAndDatabases', () => {
 
     const result = await analyseRolesPermissionsAndDatabases(pool);
 
-    expect(result).toContain('Role: test_user');
-    expect(result).toContain('Accessible Databases: test_db');
-    expect(result).toContain('- Permissions on public.test_table (r): SELECT, INSERT');
+    expect(result.messages).toContain('Role: test_user');
+    expect(result.messages).toContain('Accessible Databases: test_db');
+    expect(result.messages).toContain('- Permissions on public.test_table (r): SELECT, INSERT');
     expect(pool.query).toHaveBeenCalledTimes(3);
   });
 
@@ -54,7 +54,7 @@ describe('analyseRolesPermissionsAndDatabases', () => {
 
     const result = await analyseRolesPermissionsAndDatabases(pool);
 
-    expect(result).toContain('An error occurred while analysing roles, permissions, and database access');
+    expect(result.messages).toContain('An error occurred while analysing roles, permissions, and database access');
     expect(pool.query).toHaveBeenCalled();
   });
 });

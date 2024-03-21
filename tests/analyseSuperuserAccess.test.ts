@@ -32,7 +32,7 @@ describe('analyseSuperuserAccess', () => {
     const result = await analyseSuperuserAccess(pool);
 
     expect(pool.query).toHaveBeenCalledWith(expect.any(String));
-    expect(result).toContain('Found multiple superuser accounts: superuser1, superuser2.');
+    expect(result.messages.some(message => message.includes('Found multiple superuser accounts: superuser1, superuser2.')));
   });
 
   it('should handle no extra superuser accounts gracefully', async () => {
@@ -46,7 +46,7 @@ describe('analyseSuperuserAccess', () => {
     const result = await analyseSuperuserAccess(pool);
 
     expect(pool.query).toHaveBeenCalledWith(expect.any(String));
-    expect(result).toContain('No Issues Found.');
+    expect(result.messages).toContain('No Issues Found.');
   });
 
   it('should return an error message on failure', async () => {
@@ -55,6 +55,6 @@ describe('analyseSuperuserAccess', () => {
     const result = await analyseSuperuserAccess(pool);
 
     expect(pool.query).toHaveBeenCalledWith(expect.any(String));
-    expect(result).toContain('Error during superuser access analysis: Error: Query failed');
+    expect(result.messages).toContain('Error during superuser access analysis: Error: Query failed');
   });
 });
