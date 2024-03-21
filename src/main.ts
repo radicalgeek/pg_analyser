@@ -4,21 +4,7 @@ import { Server } from 'socket.io';
 import bodyParser from 'body-parser';
 import pool from './utils/dbClient';
 import { Request, Response, NextFunction } from 'express';
-import { analyseTextAndBinaryDataLength as analyseTextAndBinaryDataLength } from './analyses/analyseDataLength';
-import { analysePotentialEnumColumns as analysePotentialEnumColumns } from './analyses/analyseEnumConsistency';
-import { analyseNumericPrecisionAndScale as analyseNumericPrecisionAndScale } from './analyses/analyseNumericPositionAndScale';
-import { analyseColumnDataTypes } from './analyses/analyseColumnDataTypes';
-import { analyseTemporalDataTypeAppropriateness as analyseTemporalDataTypeAppropriateness } from './analyses/analyseTemporalAppropriateness';
-import { analyseUnusedOrRarelyUsedColumns as analyseUnusedOrRarelyUsedColumns } from './analyses/analyseUnusedAndRarelyUsedColumns';
-import { analyseIndexUsageAndTypes as analyseIndexUsageAndTypes } from './analyses/analyseIndexUsage';
-import { analyseSuperuserAccess } from './analyses/analyseSuperuserAccess';
-import { analyseSensitiveDataExposure } from './analyses/analyseSensitiveDataExposure';
-import { analyseDataInTransitEncryption } from './analyses/analyseDataInTransitEncryption';
-import { analyseDataAtRestEncryption } from './analyses/analyseDataAtRestEncryption';
-import { analyseDefaultAccounts } from './analyses/analyseDefaultAccounts';
-import { analyseLoggingAndAuditing } from './analyses/analyseLoggingAndAuditing';
-import { analysePasswordPolicy } from './analyses/analysePasswordPolicy';
-import { analyseRolesPermissionsAndDatabases } from './analyses/analyseRolesPermissionsAndDatabases';
+import * as Analyses from './analyses';
 
 
 const app = express();
@@ -50,15 +36,15 @@ io.on('connection', (socket) => {
           analysisResults += await analyseTableColumns(table_name) + '\n';
         }
         // Perform analysis on the database
-        analysisResults += await analyseIndexUsageAndTypes(pool) + '\n';
-        analysisResults += await analyseSuperuserAccess(pool) + '\n';
-        analysisResults += await analyseDefaultAccounts(pool) + '\n';
-        analysisResults += await analyseRolesPermissionsAndDatabases(pool) + '\n';
-        analysisResults += await analysePasswordPolicy(pool) + '\n';
-        analysisResults += await analyseLoggingAndAuditing(pool) + '\n';
-        analysisResults += await analyseSensitiveDataExposure(pool) + '\n';
-        analysisResults += await analyseDataInTransitEncryption(pool) + '\n';
-        analysisResults += await analyseDataAtRestEncryption(pool) + '\n';
+        analysisResults += await Analyses.analyseIndexUsageAndTypes(pool) + '\n';
+        analysisResults += await Analyses.analyseSuperuserAccess(pool) + '\n';
+        analysisResults += await Analyses.analyseDefaultAccounts(pool) + '\n';
+        analysisResults += await Analyses.analyseRolesPermissionsAndDatabases(pool) + '\n';
+        analysisResults += await Analyses.analysePasswordPolicy(pool) + '\n';
+        analysisResults += await Analyses.analyseLoggingAndAuditing(pool) + '\n';
+        analysisResults += await Analyses.analyseSensitiveDataExposure(pool) + '\n';
+        analysisResults += await Analyses.analyseDataInTransitEncryption(pool) + '\n';
+        analysisResults += await Analyses.analyseDataAtRestEncryption(pool) + '\n';
         
         socket.emit('analysisComplete', `<pre>${analysisResults}</pre>`);
       } catch (error) {
@@ -85,12 +71,12 @@ const analyseTableColumns = async (table: string): Promise<string> => {
 
   let analysisResults = '';
 
-  analysisResults += await analyseColumnDataTypes(pool, table) + '\n';
-  analysisResults += await analyseTemporalDataTypeAppropriateness(pool, table) + '\n';
-  analysisResults += await analyseTextAndBinaryDataLength(pool, table) + '\n';
-  analysisResults += await analysePotentialEnumColumns(pool, table) + '\n';
-  analysisResults += await analyseNumericPrecisionAndScale(pool, table) + '\n';
-  analysisResults += await analyseUnusedOrRarelyUsedColumns(pool, table) + '\n';
+  analysisResults += await Analyses.analyseColumnDataTypes(pool, table) + '\n';
+  analysisResults += await Analyses.analyseTemporalDataTypeAppropriateness(pool, table) + '\n';
+  analysisResults += await Analyses.analyseTextAndBinaryDataLength(pool, table) + '\n';
+  analysisResults += await Analyses.analysePotentialEnumColumns(pool, table) + '\n';
+  analysisResults += await Analyses.analyseNumericPrecisionAndScale(pool, table) + '\n';
+  analysisResults += await Analyses.analyseUnusedOrRarelyUsedColumns(pool, table) + '\n';
 
   return analysisResults;
 };
