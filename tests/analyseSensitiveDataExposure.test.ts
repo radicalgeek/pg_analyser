@@ -23,28 +23,36 @@ describe('analyseSensitiveDataExposure', () => {
       ],
     };
     (pool.query as jest.Mock).mockResolvedValueOnce(mockData);
-
+  
     const result = await analyseSensitiveDataExposure(pool);
-    expect(result.messages).toContain('Potential sensitive column found: user_accounts.password');
-    expect(result.messages).toContain('Potential sensitive column found: api_keys.api_key');
+  
+    const passwordMessage = result.messages.find(m => m.text.includes('Potential sensitive column found: user_accounts.password'));
+    const apiKeyMessage = result.messages.find(m => m.text.includes('Potential sensitive column found: api_keys.api_key'));
+  
+    expect(passwordMessage).toBeDefined();
+    expect(apiKeyMessage).toBeDefined();
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
-
+  
   it('should handle no sensitive columns found', async () => {
     const mockData = { rows: [] };
     (pool.query as jest.Mock).mockResolvedValueOnce(mockData);
-
+  
     const result = await analyseSensitiveDataExposure(pool);
-    expect(result.messages).toContain('No obvious sensitive information columns found.');
+  
+    const noSensitiveColumnsMessage = result.messages.find(m => m.text.includes('No obvious sensitive information columns found.'));
+    expect(noSensitiveColumnsMessage).toBeDefined();
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
-
+  
   it('should handle errors gracefully', async () => {
     const error = new Error('Test Error');
     (pool.query as jest.Mock).mockRejectedValueOnce(error);
-
+  
     const result = await analyseSensitiveDataExposure(pool);
-    expect(result.messages).toContain('An error occurred while analysing for exposed sensitive information.');
+  
+    const errorMessage = result.messages.find(m => m.text.includes('An error occurred while analysing for exposed sensitive information.'));
+    expect(errorMessage).toBeDefined();
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 

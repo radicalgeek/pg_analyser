@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { AnalysisResult } from '../types/analysisResult';
+import { AnalysisResult, MessageType } from '../types/analysisResult';
 
 const isNumber = (value: string): boolean => !isNaN(Number(value));
 
@@ -35,13 +35,13 @@ export const analyseColumnDataTypes = async (pool: Pool, table: string): Promise
       const allBooleanLike = rows.every(row => row[column_name] !== null && isBooleanLike(row[column_name].toString()));
 
       if ((data_type.includes('character') || data_type === 'text') && allBooleanLike) {
-        result.messages.push(`Column '${column_name}' in table '${table}' might be better as a boolean type.`);
+        result.messages.push({text:`Column '${column_name}' in table '${table}' might be better as a boolean type.`, type: MessageType.Warning});
       } else if (allNumbers || allDates) {
-        result.messages.push(`Column '${column_name}' in table '${table}' might be better as a numeric or date type.`);
+        result.messages.push({text:`Column '${column_name}' in table '${table}' might be better as a numeric or date type.`, type: MessageType.Warning});
       }
 
       if ((data_type === 'numeric' || data_type === 'decimal' || data_type === 'integer' || data_type === 'bigint') && allBooleanLike) {
-        result.messages.push(`Numeric column '${column_name}' in table '${table}' might be better as a boolean type (contains only 0 and 1).`);
+        result.messages.push({text:`Numeric column '${column_name}' in table '${table}' might be better as a boolean type (contains only 0 and 1).`, type: MessageType.Warning});
       }
     }
   } catch (error) {
@@ -50,11 +50,11 @@ export const analyseColumnDataTypes = async (pool: Pool, table: string): Promise
     } else {
       console.error("An unknown error occurred during column data type analysis.");
     }
-    result.messages.push(`Error during column data type analysis.`);
+    result.messages.push({text:`Error during column data type analysis in table ${table}.`, type: MessageType.Error});
   }
 
   if (result.messages.length === 0) {
-    result.messages.push('No Issues Found.');
+    result.messages.push({text:`No issues found in table ${table}`, type: MessageType.Info});
   }
   return result;
 };

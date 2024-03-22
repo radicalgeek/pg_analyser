@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { AnalysisResult } from '../types/analysisResult';
+import { AnalysisResult, MessageType } from '../types/analysisResult';
 
 export async function analyseTextAndBinaryDataLength(pool: Pool, table: string): Promise<AnalysisResult> {
   let result: AnalysisResult = {
@@ -27,22 +27,22 @@ export async function analyseTextAndBinaryDataLength(pool: Pool, table: string):
         const maxLengthInRows = dataRes.rows[0].max_length || 0;
 
         if (data_type === 'text' || data_type === 'bytea') {
-          result.messages.push(`Column '${column_name}' in table '${table}' of type '${data_type}' has maximum length of data: ${maxLengthInRows}. Consider specifying a maximum length.`);
+          result.messages.push({text:`Column '${column_name}' in table '${table}' of type '${data_type}' has maximum length of data: ${maxLengthInRows}. Consider specifying a maximum length.`, type: MessageType.Warning});
         } else if (character_maximum_length > maxLengthInRows) {
-          result.messages.push(`Column '${column_name}' in table '${table}' of type '${data_type}' with defined length ${character_maximum_length} could potentially be reduced to ${maxLengthInRows}.`);
+          result.messages.push({text:`Column '${column_name}' in table '${table}' of type '${data_type}' with defined length ${character_maximum_length} could potentially be reduced to ${maxLengthInRows}.`, type: MessageType.Warning});
         }
       } catch (error) {
         console.error(`Error during data length analysis for column ${column_name}:`, error);
-        result.messages.push(`Error during data length analysis for column ${column_name}:`);
+        result.messages.push({text:`Error during data length analysis for column ${column_name}:`, type: MessageType.Error});
       }
     }
   } catch (error) {
     console.error('Error analysing column details:', error);
-    result.messages.push('Error during the data length analysis.');
+    result.messages.push({text:'Error during the data length analysis.', type: MessageType.Error});
   }
 
   if (result.messages.length === 0) {
-    result.messages.push('No Issues Found.');
+    result.messages.push({text:`No issues found in table ${table}`, type: MessageType.Info});
   }
   return result;
 }

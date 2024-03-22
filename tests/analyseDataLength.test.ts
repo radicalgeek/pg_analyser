@@ -1,6 +1,7 @@
 // tests/analyseDataLength.test.ts
 import { Pool } from 'pg';
 import { analyseTextAndBinaryDataLength } from '../src/analyses/analyseDataLength';
+import { AnalysisResult, MessageType } from '../src/types/analysisResult';
 
 jest.mock('pg', () => {
   const mQuery = jest.fn();
@@ -33,9 +34,9 @@ describe('analyseTextAndBinaryDataLength', () => {
         .mockResolvedValueOnce(mockLengthDataText) // Second call for the 'test_text' column
         .mockResolvedValueOnce(mockLengthDataBytea); // Third call for the 'test_bytea' column
 
-    const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
-    expect(result.messages.some(message => message.includes('has maximum length of data: 100')))
-    expect(pool.query).toHaveBeenCalledTimes(3);
+        const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
+        expect(result.messages.some(m => m.text.includes('has maximum length of data: 100'))).toBeTruthy();
+        expect(pool.query).toHaveBeenCalledTimes(3);
 });
 
 
@@ -52,7 +53,7 @@ describe('analyseTextAndBinaryDataLength', () => {
 
 
     const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
-    expect(result.messages.some(message => message.includes('could potentially be reduced to 50')));
+    expect(result.messages.some(m => m.text.includes('could potentially be reduced to 50'))).toBeTruthy();
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -60,7 +61,7 @@ describe('analyseTextAndBinaryDataLength', () => {
     (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [] }); 
 
     const result = await analyseTextAndBinaryDataLength(pool, 'test_table');
-    expect(result.messages).toContain('No Issues Found.');
+    expect(result.messages.some(m => m.text === 'No issues found in table test_table')).toBeTruthy();
     expect(pool.query).toHaveBeenCalledTimes(1);
   });
 

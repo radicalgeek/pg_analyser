@@ -1,6 +1,7 @@
 // tests/analyseNumberAndDatesInStrings.test.ts
 import { Pool } from 'pg';
 import { analyseColumnDataTypes } from '../src/analyses/analyseColumnDataTypes';
+import { AnalysisResult, MessageType } from '../src/types/analysisResult';
 
 jest.mock('pg', () => {
   const mPool = {
@@ -31,7 +32,9 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
       .mockResolvedValueOnce(mockRowsData); // Second call for column data
 
     const result = await analyseColumnDataTypes(pool, 'test_table');
-    expect(result.messages.some(message => message.includes('might be better as a numeric or date type')));
+    // Adjust based on how messages are structured
+    const hasExpectedMessage = result.messages.some(message => message.text.includes(`Column 'numeric_column' in table 'test_table' might be better as a numeric or date type.`) && message.type === MessageType.Warning);
+    expect(hasExpectedMessage).toBeTruthy();
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -42,16 +45,16 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
     const mockRowsData = {
       rows: [{ date_column: '2020-01-01' }, { date_column: '2021-01-01' }],
     };
-
+  
     (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnsData) // First call for column details
       .mockResolvedValueOnce(mockRowsData); // Second call for column data
-
+  
     const result = await analyseColumnDataTypes(pool, 'test_table');
-    expect(result.messages.some(message => message.includes('might be better as a numeric or date type')));
+    expect(result.messages.some(message => message.text.includes('might be better as a numeric or date type'))).toBeTruthy();
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
-
+  
   it('should report no issues found if no columns meet criteria', async () => {
     const mockColumnsData = {
       rows: [{ column_name: 'mixed_column', data_type: 'character varying' }],
@@ -59,16 +62,16 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
     const mockRowsData = {
       rows: [{ mixed_column: '123' }, { mixed_column: 'abc' }, { mixed_column: '2020-01-01' }],
     };
-
+  
     (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnsData) // First call for column details
       .mockResolvedValueOnce(mockRowsData); // Second call for column data
-
+  
     const result = await analyseColumnDataTypes(pool, 'test_table');
-    expect(result.messages).toContain('No Issues Found.');
+    expect(result.messages.some(message => message.text === 'No issues found in table test_table')).toBeTruthy();
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
-
+  
   it('should identify string columns that might be better as a boolean type', async () => {
     const mockColumnsData = {
       rows: [{ column_name: 'bool_string_column', data_type: 'character varying' }],
@@ -76,31 +79,30 @@ describe('analyseNumberDateBooleanInStringOrNumberColumns', () => {
     const mockRowsDataForStringBool = {
       rows: [{ bool_string_column: 'true' }, { bool_string_column: 'false' }],
     };
-
+  
     (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnsData) // First call for column details
       .mockResolvedValueOnce(mockRowsDataForStringBool); // Second call for column data
-
+  
     const result = await analyseColumnDataTypes(pool, 'test_table');
-    expect(result.messages.some(message => message.includes('might be better as a boolean type')));
+    expect(result.messages.some(message => message.text.includes('might be better as a boolean type'))).toBeTruthy();
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
-
+  
   it('should identify numeric columns that might be better as a boolean type', async () => {
-    // Assuming the function is updated to check numeric columns as well
     const mockColumnsDataForNumericBool = {
       rows: [{ column_name: 'bool_numeric_column', data_type: 'integer' }],
     };
     const mockRowsDataForNumericBool = {
       rows: [{ bool_numeric_column: 1 }, { bool_numeric_column: 0 }],
     };
-
+  
     (pool.query as jest.Mock)
       .mockResolvedValueOnce(mockColumnsDataForNumericBool) // First call for column details
       .mockResolvedValueOnce(mockRowsDataForNumericBool); // Second call for column data
-
-    const result = await analyseColumnDataTypes(pool, 'test_table'); // Assuming the function name reflects its broader analysis scope
-    expect(result.messages.some(message => message.includes('Numeric column \'bool_numeric_column\' in table \'test_table\' might be better as a boolean type (contains only 0 and 1)')));
+  
+    const result = await analyseColumnDataTypes(pool, 'test_table');
+    expect(result.messages.some(message => message.text.includes('Numeric column \'bool_numeric_column\' in table \'test_table\' might be better as a boolean type (contains only 0 and 1)'))).toBeTruthy();
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 

@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { AnalysisResult } from '../types/analysisResult';
+import { AnalysisResult, MessageType } from '../types/analysisResult';
 
 export async function analyseNumericPrecisionAndScale(pool: Pool, table: string): Promise<AnalysisResult> {
   let result: AnalysisResult = {
@@ -37,24 +37,24 @@ export async function analyseNumericPrecisionAndScale(pool: Pool, table: string)
         const maxScale = dataRes.rows[0] ? dataRes.rows[0].max_scale : null;
 
         if (maxPrecision !== null && numeric_precision > maxPrecision) {
-          result.messages.push(`Column '${column_name}' in table '${table}' has defined numeric precision of ${numeric_precision} which could potentially be reduced to ${maxPrecision}.`);
+          result.messages.push({text:`Column '${column_name}' in table '${table}' has defined numeric precision of ${numeric_precision} which could potentially be reduced to ${maxPrecision}.`, type: MessageType.Warning});
         }
 
         if (maxScale !== null && numeric_scale > maxScale) {
-          result.messages.push(`Column '${column_name}' in table '${table}' has defined numeric scale of ${numeric_scale} which could potentially be reduced to ${maxScale}.`);
+          result.messages.push({text:`Column '${column_name}' in table '${table}' has defined numeric scale of ${numeric_scale} which could potentially be reduced to ${maxScale}.`, type: MessageType.Warning});
         }
       } catch (error) {
         console.error(`Error during numeric precision and scale analysis for column ${column_name}: ${error}`);
-        result.messages.push(`Error during numeric precision and scale analysis for column ${column_name}:`);
+        result.messages.push({text:`Error during numeric precision and scale analysis for column ${column_name}:`, type: MessageType.Error});
       }
     }
   } catch (error) {
     console.error(`Error during the numeric precision and scale analysis: ${error}`);
-    result.messages.push('Error during the numeric precision and scale analysis.');
+    result.messages.push({text:`Error during the numeric precision and scale analysis. of ${table}.`, type: MessageType.Error});
   }
 
   if (result.messages.length === 0) {
-    result.messages.push('No Issues Found.');
+    result.messages.push({text:`No issues found in table ${table}`, type: MessageType.Info});
   }
 
   return result;

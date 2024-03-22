@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { AnalysisResult } from '../types/analysisResult';
+import { AnalysisResult, MessageType } from '../types/analysisResult';
 
 const sensitiveKeywords = ['password','passwd', 'token', 'apikey', 'secret'];
 const systemTables = ['pg_ts_config_map', 'pg_ts_parser', 'pg_roles', 'pg_user', 'pg_authid', 'pg_shadow'];
@@ -24,14 +24,14 @@ export async function analyseSensitiveDataExposure(pool: Pool): Promise<Analysis
     const filteredRows = rows.filter(row => !systemTables.includes(row.table_name));
     if (filteredRows.length > 0) {
       filteredRows.forEach(row => {
-        result.messages.push(`Potential sensitive column found: ${row.table_name}.${row.column_name}`);
+        result.messages.push({text:`Potential sensitive column found: ${row.table_name}.${row.column_name}`, type: MessageType.Warning});
       });
     } else {
-      result.messages.push('No obvious sensitive information columns found.');
+      result.messages.push({text:'No obvious sensitive information columns found.', type: MessageType.Info});
     }
   } catch (error) {
     console.error(`Error during exposed sensitive information analysis: ${error}`);
-    result.messages.push('An error occurred while analysing for exposed sensitive information.');
+    result.messages.push({text:'An error occurred while analysing for exposed sensitive information.', type: MessageType.Error});
   }
 
   return result;

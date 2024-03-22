@@ -1,6 +1,7 @@
 // tests/analyseSuperuserAccess.test.ts
 import { Pool } from 'pg';
 import { analyseSuperuserAccess } from '../src/analyses/analyseSuperuserAccess';
+import { AnalysisResult, MessageType } from '../src/types/analysisResult';
 
 jest.mock('pg', () => {
   const mPool = {
@@ -28,13 +29,17 @@ describe('analyseSuperuserAccess', () => {
       ],
     };
     (pool.query as jest.Mock).mockResolvedValueOnce(mockSuperusers);
-
+  
     const result = await analyseSuperuserAccess(pool);
-
+  
     expect(pool.query).toHaveBeenCalledWith(expect.any(String));
-    expect(result.messages.some(message => message.includes('Found multiple superuser accounts: superuser1, superuser2.')));
+    const superusersMessage = result.messages.find(m => 
+      m.text.includes('Found multiple superuser accounts: superuser1, superuser2.')
+    );
+    expect(superusersMessage).toBeDefined();
+    expect(superusersMessage?.type).toEqual(MessageType.Warning);
   });
-
+  
   it('should handle no extra superuser accounts gracefully', async () => {
     const mockSuperusers = {
       rows: [
@@ -42,19 +47,24 @@ describe('analyseSuperuserAccess', () => {
       ],
     };
     (pool.query as jest.Mock).mockResolvedValueOnce(mockSuperusers);
-
+  
     const result = await analyseSuperuserAccess(pool);
-
+  
     expect(pool.query).toHaveBeenCalledWith(expect.any(String));
-    expect(result.messages).toContain('No Issues Found.');
+    // Assuming you add a generic success message when there's no issue found
+    expect(result.messages.some(m => m.text === 'No issues found.' && m.type === MessageType.Info)).toBeTruthy();
   });
-
+  
   it('should return an error message on failure', async () => {
     (pool.query as jest.Mock).mockRejectedValueOnce(new Error('Query failed'));
-
+  
     const result = await analyseSuperuserAccess(pool);
-
+  
     expect(pool.query).toHaveBeenCalledWith(expect.any(String));
-    expect(result.messages).toContain('Error during superuser access analysis: Error: Query failed');
+    const errorMessage = result.messages.find(m => 
+      m.text.includes('Error during superuser access analysis: Error: Query failed')
+    );
+    expect(errorMessage).toBeDefined();
+    expect(errorMessage?.type).toEqual(MessageType.Error);
   });
 });

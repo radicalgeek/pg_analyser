@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { AnalysisResult } from '../types/analysisResult';
+import { AnalysisResult, MessageType } from '../types/analysisResult';
 
 export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<AnalysisResult> {
   let result: AnalysisResult = {
@@ -48,24 +48,33 @@ export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<A
       const permissionsRes = await pool.query(queryPermissions, [role.rolname]);
       const accessibleDbs = dbRes.rows.map(row => row.datname).join(', ');
 
-      result.messages.push(`Role: ${role.rolname}`);
-      result.messages.push(`Attributes: Superuser: ${role.rolsuper}, Can Login: ${role.rolcanlogin}`);
-      result.messages.push(`Accessible Databases: ${accessibleDbs || 'None'}`);
-
+      let roleMessage = `
+      Role: ${role.rolname}\n
+      Attributes: Superuser: ${role.rolsuper}, Can Login: ${role.rolcanlogin}\n
+      Accessible Databases: ${accessibleDbs || 'None'}
+      `.trim();
+      
       if (permissionsRes.rows.length > 0) {
-        permissionsRes.rows.forEach(({ schema, object, type, privileges }) => {
+        let permissionsText = permissionsRes.rows.map(({ schema, object, type, privileges }) => {
           const privilegesArray = privileges.replace('{', '').replace('}', '').split(',');
-          result.messages.push(`- Permissions on ${schema}.${object} (${type}): ${privilegesArray.join(', ')}`);
-        });
+          return `- Permissions on ${schema}.${object} (${type}): ${privilegesArray.join(', ')}`;
+        }).join('\n');
+      
+        roleMessage += `\n${permissionsText}`;
       } else {
-        result.messages.push('No explicit permissions or inherited permissions on database objects.');
+        roleMessage += '\nNo explicit permissions or inherited permissions on database objects.';
       }
+      
+      result.messages.push({
+        text: roleMessage,
+        type: MessageType.Warning 
+      });
 
 
     }
   } catch (error) {
     console.error(`Error during roles, permissions, and database access analysis: ${error}`);
-    result.messages.push('An error occurred while analysing roles, permissions, and database access');
+    result.messages.push({text:'An error occurred while analysing roles, permissions, and database access', type: MessageType.Error});
   }
 
   return result;
