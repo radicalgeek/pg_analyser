@@ -2,18 +2,21 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import bodyParser from 'body-parser';
-import { getPool } from './utils/dbClient';
+import { getPool, setupDatabase } from './utils/dbClient';
+import { Pool } from 'pg';
 import { Request, Response, NextFunction } from 'express';
 import { groupResultsByTitle, mergeResultsWithSameTitle, formatResultsForWeb } from './utils/formatResults';
 import { runAllAnalyses } from './analysesRunner';
+import { CliArgs } from './types/cliArgs';
 
 
-module.exports = function startServer(cliArgs: typeof CliArgs) {
+export function startServer(cliArgs: CliArgs) {
   const app = express();
   const httpServer = createServer(app);
   const io = new Server(httpServer);
   const port = 3000; 
-  const pool = getPool();
+  setupDatabase();
+  const pool: Pool = getPool();
 
   app.use(bodyParser.json());
   app.use(express.static('src/public')); 
@@ -25,10 +28,11 @@ module.exports = function startServer(cliArgs: typeof CliArgs) {
       pool.connect(async (err, client, release) => {
         if (err) {
           socket.emit('error', '<pre>Database connection error. Please check your configuration.</pre>');
-          return console.error('Error acquiring database client', err.stack);
+          console.error('Error acquiring database client', err.stack);
+          return; 
         }
         try {
-          const analysisResults = await runAllAnalyses();
+          const analysisResults = await runAllAnalyses(pool);
           const groupedResults = groupResultsByTitle(analysisResults);
           const mergedResults = mergeResultsWithSameTitle(groupedResults);
           socket.emit('analysisComplete', formatResultsForWeb(mergedResults));

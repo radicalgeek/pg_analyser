@@ -1,8 +1,8 @@
-import pool from './utils/dbClient';
 import * as Analyses from './analyses';
 import { AnalysisResult } from './types/analysisResult';
+import { Pool } from 'pg';
 
-export async function runAllAnalyses(): Promise<AnalysisResult[]> {
+export async function runAllAnalyses(pool: Pool): Promise<AnalysisResult[]> {
   let analysisResults: AnalysisResult[] = [];
 
   try {
@@ -11,7 +11,7 @@ export async function runAllAnalyses(): Promise<AnalysisResult[]> {
 
     // Perform analysis on each table
     for (const { table_name } of tables) {
-      const tableAnalysisResults = await analyseTableColumns(table_name);
+      const tableAnalysisResults = await analyseTableColumns(table_name, pool);
       analysisResults.push(...tableAnalysisResults);
     }
 
@@ -34,7 +34,7 @@ export async function runAllAnalyses(): Promise<AnalysisResult[]> {
   return analysisResults;
 
 }
-const analyseTableColumns = async (table: string): Promise<AnalysisResult[]> => {
+const analyseTableColumns = async (table: string, pool: Pool): Promise<AnalysisResult[]> => {
   const query = `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = $1`;
   const res = await pool.query(query, [table]);
 

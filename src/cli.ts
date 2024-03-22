@@ -2,7 +2,7 @@ const { runAllAnalyses } = require('./analysesRunner');
 const { getPool, setupDatabase } = require('./utils/dbClient');
 const { CliArgs } = require('./types/cliArgs');
 
-module.exports = function runCliAnalysis(cliArgs: typeof CliArgs) {
+export function runCliAnalysis(cliArgs: typeof CliArgs) {
   const dbConfig = {
     host: cliArgs.dbHost,
     user: cliArgs.dbUser,

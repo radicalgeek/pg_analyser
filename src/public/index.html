@@ -70,20 +70,33 @@
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io(); // Connect to the server
+        const socket = io();
 
         document.getElementById('analyseButton').addEventListener('click', function() {
-        socket.emit('startAnalysis'); // Request to start analysis
-        // Display animation or loading indicator
-        document.getElementById('results').innerHTML = '<div>analysing...</div>';
+        socket.emit('startAnalysis');
+            document.getElementById('results').innerHTML = '<div>analysing...</div>';
         });
 
-        socket.on('analysisComplete', (data) => {
-        document.getElementById('results').innerHTML = data;
+        socket.on('analysisComplete', (jsonData) => {
+            const resultsElement = document.getElementById('results');
+            resultsElement.innerHTML = ''; 
+
+            const data = JSON.parse(jsonData);
+            data.forEach((result) => {
+                const titleElement = document.createElement('h2');
+                titleElement.textContent = result.title;
+                resultsElement.appendChild(titleElement);
+
+                result.messages.forEach((message) => {
+                    const messageElement = document.createElement('p');
+                    messageElement.textContent = message;
+                    resultsElement.appendChild(messageElement);
+                });
+            });
         });
 
         socket.on('error', (errorMessage) => {
-        document.getElementById('results').innerHTML = errorMessage;
+            document.getElementById('results').innerHTML = errorMessage;
         });
     </script>
 </body>

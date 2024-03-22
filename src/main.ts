@@ -1,7 +1,8 @@
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const startServer = require('./src/web'); // Assume this starts your express server
-const runCliAnalysis = require('./src/cli'); // Assume this handles CLI analysis logic
+import { startServer } from './web'; // Assume this starts your express server
+import { runCliAnalysis } from './cli'; // Assume this handles CLI analysis logic
+import { CliArgs } from './types/cliArgs';
 
 const { argv } = yargs(hideBin(process.argv))
   .option('server', {
@@ -36,12 +37,10 @@ const { argv } = yargs(hideBin(process.argv))
   });
 
 const { server, ...cliOptions } = argv;
-const cliArgs: typeof CliArgs = cliOptions;
+const cliArgs: CliArgs = cliOptions;
 
 if (server) {
-  // Server mode
   startServer(cliArgs);
 } else {
-  // CLI mode
   runCliAnalysis(cliArgs);
 }
