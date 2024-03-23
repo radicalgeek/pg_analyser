@@ -1,7 +1,11 @@
 import { Pool } from 'pg';
+import { AnalysisResult, MessageType } from '../types/analysisResult';
 
-export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<string> {
-  let result = '<h2>Roles, Permissions, and Database Access Analysis</h2>\n';
+export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<AnalysisResult> {
+  let result: AnalysisResult = {
+    title: `Roles, Permissions, and Database Access Analysis`,
+    messages: []
+  };
 
   const queryRoles = `
     SELECT rolname, rolsuper, rolcreaterole, rolcreatedb, rolcanlogin, oid
@@ -44,24 +48,32 @@ export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<s
       const permissionsRes = await pool.query(queryPermissions, [role.rolname]);
       const accessibleDbs = dbRes.rows.map(row => row.datname).join(', ');
 
-      result += `Role: ${role.rolname}\n`;
-      result += `Attributes: Superuser: ${role.rolsuper}, Can Login: ${role.rolcanlogin}\n`;
-      result += `Accessible Databases: ${accessibleDbs || 'None'}\n`;
+      let roleMessage = `Role: ${role.rolname}` +
+      `\n- Attributes: Superuser: ${role.rolsuper}, Can Login: ${role.rolcanlogin}` +
+      `\n- Accessible Databases: ${accessibleDbs || 'None'}`;
 
+      
       if (permissionsRes.rows.length > 0) {
-        permissionsRes.rows.forEach(({ schema, object, type, privileges }) => {
+        let permissionsText = permissionsRes.rows.map(({ schema, object, type, privileges }) => {
           const privilegesArray = privileges.replace('{', '').replace('}', '').split(',');
-          result += `- Permissions on ${schema}.${object} (${type}): ${privilegesArray.join(', ')}\n`;
-        });
+          return `- Permissions on ${schema}.${object} (${type}): ${privilegesArray.join(', ')}`;
+        }).join('\n');
+      
+        roleMessage += `\n${permissionsText}`;
       } else {
-        result += 'No explicit permissions or inherited permissions on database objects.\n';
+        roleMessage += '\nNo explicit permissions or inherited permissions on database objects.';
       }
+      
+      result.messages.push({
+        text: roleMessage,
+        type: MessageType.Warning 
+      });
 
-      result += '\n'; // Separate each role section
+
     }
   } catch (error) {
     console.error(`Error during roles, permissions, and database access analysis: ${error}`);
-    result += 'An error occurred while analysing roles, permissions, and database access\n';
+    result.messages.push({text:'An error occurred while analysing roles, permissions, and database access', type: MessageType.Error});
   }
 
   return result;

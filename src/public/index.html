@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PG Analyser</title>
+    <link rel="icon" type="image/webp" href="./logo.webp">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" crossorigin="anonymous">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -56,6 +58,57 @@
             width: 100%;
             text-align: center; /* Center text in the footer */
         }
+        .message-info {
+            background-color: #e6ffed; /* Light green */
+            color: #2c662d;
+            border-left: 5px solid #2c662d;
+        }
+
+        .message-warning {
+            background-color: #fff8e6; /* Light yellow */
+            color: #856404;
+            border-left: 5px solid #856404;
+        }
+
+        .message-error {
+            background-color: #ffe6e6; /* Light red */
+            color: #a94442;
+            border-left: 5px solid #a94442;
+        }
+
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.4s;
+        }
+
+        .active, .accordion:hover {
+            background-color: #ccc;
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        .info { background-color: #d4edda; }
+        .warning { background-color: #fff3cd; }
+        .error { background-color: #f8d7da; }
+
     </style>
 </head>
 <body>
@@ -70,20 +123,103 @@
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io(); // Connect to the server
+        const socket = io();
 
         document.getElementById('analyseButton').addEventListener('click', function() {
-        socket.emit('startAnalysis'); // Request to start analysis
-        // Display animation or loading indicator
-        document.getElementById('results').innerHTML = '<div>analysing...</div>';
+        socket.emit('startAnalysis');
+            document.getElementById('results').innerHTML = '<div>analysing...</div>';
         });
 
-        socket.on('analysisComplete', (data) => {
-        document.getElementById('results').innerHTML = data;
+        socket.on('analysisComplete', (jsonData) => {
+            const resultsElement = document.getElementById('results');
+            resultsElement.innerHTML = '';
+            const data = JSON.parse(jsonData);
+            data.forEach((result) => {
+                const accordion = document.createElement('button');
+                accordion.className = 'accordion';
+
+
+                let maxSeverity = 'info';
+                result.messages.forEach((message) => {
+                    // Determine the max severity for accordion color
+                    if (message.type === 'error') maxSeverity = 'error';
+                    else if (message.type === 'warning' && maxSeverity !== 'error') maxSeverity = 'warning';
+                });
+
+                // Define icons for each severity level
+                let iconHtml;
+                switch (maxSeverity) {
+                    case 'info':
+                        iconHtml = '<i class="fas fa-info-circle"></i> ';
+                        break;
+                    case 'warning':
+                        iconHtml = '<i class="fas fa-exclamation-triangle"></i> ';
+                        break;
+                    case 'error':
+                        iconHtml = '<i class="fas fa-times-circle"></i> ';
+                        break;
+                    default:
+                        iconHtml = '';
+                }
+
+                // Add the icon and title to the accordion
+                accordion.innerHTML = `${iconHtml}${result.title} <i class="fas fa-chevron-down" style="float:right;"></i>`;
+
+                
+                const panel = document.createElement('div');
+                panel.className = 'panel';
+                result.messages.forEach((message) => {
+                    // Wrap recommendations in a message div
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${message.type}`;
+
+                    if(message.text.startsWith('Additional Recommendations for Password Policy:') || message.text.startsWith('Role')){
+                        const parts = message.text.split('\n- ').filter(part => part);
+                        const listElement = document.createElement('ul');
+                        parts.forEach((part, index) => {
+                            const itemElement = document.createElement('li');
+                            if (index === 0) {
+                                itemElement.textContent = part;
+                                itemElement.style.listStyleType = 'none'; // Remove bullet for title
+                            } else {
+                                itemElement.textContent = ` ${part}`; // Prefix recommendations for clarity
+                            }
+                            listElement.appendChild(itemElement);
+                        });
+                        messageDiv.appendChild(listElement); // Append the list to the message div
+                    } else {
+                        messageDiv.textContent = message.text;
+                    }
+
+                    panel.appendChild(messageDiv); // Append the message div to the panel
+
+                    // Determine the max severity for accordion color
+                    if (message.type === 'error') maxSeverity = 'error';
+                    else if (message.type === 'warning' && maxSeverity !== 'error') maxSeverity = 'warning';
+                });
+
+                accordion.classList.add(maxSeverity); // Apply severity-based styling to accordion
+                accordion.addEventListener('click', function() {
+                    this.classList.toggle("active");
+                    var icon = this.querySelector('i');
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+
+                    var panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                    }
+                });
+
+                resultsElement.appendChild(accordion); // Append the accordion to the results element
+                resultsElement.appendChild(panel); // Append the panel to the results element
+            });
         });
 
         socket.on('error', (errorMessage) => {
-        document.getElementById('results').innerHTML = errorMessage;
+            document.getElementById('results').innerHTML = errorMessage;
         });
     </script>
 </body>

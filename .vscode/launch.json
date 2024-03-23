@@ -7,8 +7,8 @@
         "name": "Attach to Docker",
         "port": 9229,
         "address": "localhost",
-        "localRoot": "${workspaceFolder}",
-        "remoteRoot": "/app",
+        "localRoot": "${workspaceFolder}/src",
+        "remoteRoot": "/app/src",
         "skipFiles": [
           "<node_internals>/**"
         ]

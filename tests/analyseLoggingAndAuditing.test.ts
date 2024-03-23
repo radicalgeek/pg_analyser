@@ -1,6 +1,8 @@
 // tests/analyseLoggingAndAuditing.test.ts
 import { Pool } from 'pg';
 import { analyseLoggingAndAuditing } from '../src/analyses/analyseLoggingAndAuditing';
+import { AnalysisResult, MessageType } from '../src/types/analysisResult';
+
 
 jest.mock('pg', () => {
   const mPool = {
@@ -23,36 +25,41 @@ describe('analyseLoggingAndAuditing', () => {
       { name: 'log_connections', setting: 'on' },
       { name: 'log_disconnections', setting: 'on' }
     ];
-
+  
     mockSettings.forEach((setting, index) => {
       (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [setting], rowCount: 1 });
     });
-
+  
     const result = await analyseLoggingAndAuditing(pool);
-
+  
     // Ensure all logging settings are queried and analysed correctly
     mockSettings.forEach(setting => {
-      expect(result).toContain(`${setting.name}: ${setting.setting}`);
+      const settingMessage = result.messages.find(m => m.text.includes(`${setting.name}: ${setting.setting}`));
+      expect(settingMessage).toBeDefined();
+      expect(settingMessage?.type).toEqual(MessageType.Info); // Adjust the expected type as necessary
     });
-
+  
     expect(pool.query).toHaveBeenCalledTimes(mockSettings.length +1);
   });
-
+  
   it('should handle missing settings gracefully', async () => {
     (pool.query as jest.Mock).mockResolvedValue({ rows: [], rowCount: 0 });
-
+  
     const result = await analyseLoggingAndAuditing(pool);
-
-    expect(result).toContain('Not found');
+  
+    const missingSettingMessage = result.messages.find(message => message.text.includes('Not found'));
+    expect(missingSettingMessage).toBeDefined();
     expect(pool.query).toHaveBeenCalled();
   });
-
+  
   it('should handle errors gracefully', async () => {
     (pool.query as jest.Mock).mockRejectedValue(new Error('Test error'));
-
+  
     const result = await analyseLoggingAndAuditing(pool);
-
-    expect(result).toContain('An error occurred while analysing logging and auditing settings.');
+  
+    const errorMessage = result.messages.find(m => m.text.includes('An error occurred while analysing logging and auditing settings.'));
+    expect(errorMessage).toBeDefined();
+    expect(errorMessage?.type).toEqual(MessageType.Error);
     expect(pool.query).toHaveBeenCalled();
   });
 

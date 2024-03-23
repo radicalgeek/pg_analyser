@@ -49,12 +49,13 @@ describe('analyseIndexUsageAndTypes', () => {
 
     const result = await analyseIndexUsageAndTypes(pool);
 
-    expect(result).toContain('has very low usage');
-    expect(result).toContain('Duplicate indexes found');
-    expect(result).toContain('might benefit from a GIN index');
-    expect(result).toContain('might benefit from a BRIN index');
-    expect(result).toContain('might benefit from a GiST index');
-    expect(result).toContain('is not indexed. Consider adding an index');
+    expect(result.messages.some(m => m.text.includes('has very low usage'))).toBeTruthy();
+    expect(result.messages.some(m => m.text.includes('Duplicate indexes found'))).toBeTruthy();
+    expect(result.messages.some(m => m.text.includes('might benefit from a GIN index'))).toBeTruthy();
+    expect(result.messages.some(m => m.text.includes('might benefit from a BRIN index'))).toBeTruthy();
+    expect(result.messages.some(m => m.text.includes('might benefit from a GiST index'))).toBeTruthy();
+    expect(result.messages.some(m => m.text.includes('is not indexed. Consider adding an index'))).toBeTruthy();
+  
     expect(pool.query).toHaveBeenCalledTimes(6);
   });
 

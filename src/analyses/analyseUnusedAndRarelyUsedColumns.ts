@@ -1,7 +1,11 @@
 import { Pool } from 'pg';
+import { AnalysisResult, MessageType } from '../types/analysisResult';
 
-export async function analyseUnusedOrRarelyUsedColumns(pool: Pool, table: string): Promise<string> {
-  let result = '<h2>Unused or Rarely Used Columns Analysis</h2>';
+export async function analyseUnusedOrRarelyUsedColumns(pool: Pool, table: string): Promise<AnalysisResult> {
+  let result: AnalysisResult = {
+    title: `Unused or Rarely Used Columns Analysis`,
+    messages: []
+  };
 
   try {
     const queryColumns = `
@@ -27,24 +31,24 @@ export async function analyseUnusedOrRarelyUsedColumns(pool: Pool, table: string
         const { total_rows, non_null_rows, non_null_percentage, unique_values } = resAnalysis.rows[0];
 
         if (non_null_percentage < unusedColumnPercentageThreshold) {
-          result += `Column '${column}' in table '${table}' is rarely used or mostly null (${non_null_percentage}% non-null values).` + '\n';
+          result.messages.push({text:`Column '${column}' in table '${table}' is rarely used or mostly null (${non_null_percentage}% non-null values).`, type: MessageType.Warning});
         }
 
         if (unique_values === 1 && total_rows > 1) {
-          result += `Column '${column}' in table '${table}' might be overusing a default value (only 1 unique value across non-null entries).` + '\n';
+          result.messages.push({text:`Column '${column}' in table '${table}' might be overusing a default value (only 1 unique value across non-null entries).`, type: MessageType.Warning});
         }
       } catch (error) {
         console.error(`Error during rarely used columns analysis for column '${column}' in table '${table}':`, error);
-        result += `Error during rarely used columns analysis for column '${column}' in table '${table}'` + '\n';
+        result.messages.push({text:`Error during rarely used columns analysis for column '${column}' in table '${table}'`, type: MessageType.Error});
       }
     }
   } catch (error) {
     console.error(`Error during rarely used columns analysis for table '${table}':`, error);
-    result += `Error during rarely used columns analysis for table '${table}'` + '\n';
+    result.messages.push({text:`Error during rarely used columns analysis for table '${table}'`, type: MessageType.Error});
   }
 
-  if (result === '<h2>Unused or Rarely Used Columns Analysis</h2>') {
-    result += 'No Issues Found.';
+  if (result.messages.length === 0) {
+    result.messages.push({text:`No issues found in table ${table}`, type: MessageType.Info});
   }
   return result;
 }
