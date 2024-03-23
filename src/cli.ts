@@ -1,7 +1,7 @@
 import { runAllAnalyses } from './analysesRunner'; 
 import { getPool, setupDatabase } from './utils/dbClient';
 import { CliArgs } from './types/cliArgs';
-import { formatResultsForCLI } from './utils/formatResults';
+import { formatResultsForCLI, groupResultsByTitle, mergeResultsWithSameTitle } from './utils/formatResults';
 
 export async function runCliAnalysis(cliArgs: CliArgs) {
 
@@ -11,7 +11,9 @@ export async function runCliAnalysis(cliArgs: CliArgs) {
   try {
 
     const results = await runAllAnalyses(pool);
-    const formattedResults = formatResultsForCLI(results);
+    const groupedResults = groupResultsByTitle(results);
+    const mergedResults = mergeResultsWithSameTitle(groupedResults);
+    const formattedResults = formatResultsForCLI(mergedResults);
     console.log(formattedResults);
 
   } catch (error) {

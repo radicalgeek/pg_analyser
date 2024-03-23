@@ -1,7 +1,7 @@
 ![pg analyser logo](https://github.com/radicalgeek/pg_analyser/blob/main/src/public/logo.webp?raw=true)
 # pg_analyser
 
-`pg_analyser` is a web-based PostgreSQL database analysis tool designed to inspect and report on various aspects of database schema configuration and data usage patterns. It helps identify potential issues and optimisations to ensure the database is structured efficiently, both in terms of storage and query performance. This utility performs an array of checks across the database, providing insights into areas such as data type appropriateness and index usage, with a user-friendly web interface for initiating analysis and viewing recommendations.
+`pg_analyser` is a PostgreSQL database analysis tool designed to inspect and report on various aspects of database schema configuration and data usage patterns. It helps identify potential issues and optimisations to ensure the database is structured efficiently, both in terms of storage and query performance. This utility performs an array of checks across the database, providing insights into areas such as data type appropriateness and index usage, with a user-friendly web interface for initiating analysis and viewing recommendations.
 
 ## Features
 
@@ -37,6 +37,46 @@
 
 ## Getting Started
 
+The utility can be used either at the command line or as a web application. The web application provides a user-friendly interface for initiating the analysis and viewing the results. The command-line interface is useful for scripting and automation purposes.
+
+### CLI 
+
+First install the package globally
+
+```bash
+npm install -g pg_analyser
+
+```
+
+You can then run the tool with the following command, ensuring you pass in the correct database connection details
+
+```bash
+ pg-analyser --dbHost=your_database_ip --dbUser=your_database_user --dbPassword=your_database_password --dbName=your_database_name --dbPort=5432
+```
+
+You can also run the web interface by setting the connection details using environment variable and running the following command
+
+```bash
+export PGHOST=db
+export PGUSER=your_database_user
+export PGDATABASE=your_database_name
+export PGPASSWORD=your_database_password
+pg-analyser --server
+
+```
+
+### Docker image
+
+The tool is also available as a docker image. You can run the tool as a web interface using the following command
+
+```bash
+docker run -e PGUSER='your_database_user' -e PGPASSWORD='your_database_password' -e PGHOST='localhost' -e PGDATABASE='your_database_name' -e PGPORT=5432 -p 3000:3000 radicalgeek/pg_analyser
+```
+
+The repository also contains a docker compose file used for local development that could easily be adapted, and kubernetes manifests for deployment in a kubernetes cluster.
+
+## Development
+
 ### Prerequisites
 
 - ***Testing in docker*** Docker and Docker compose for local testing
@@ -58,12 +98,12 @@ cp .env.template .env
 
 3. start the application and a PostgreSQL instance using Docker Compose
 ```bash
-docker-compose up --build
+docker-compose up -d --build
 ```
 
 4. Access the service at http://localhost:3000 
 
-5. the compose file will bring up a database with a number of misconfigured tables that the tool will identify. 
+5. The compose file will bring up a database with a number of misconfigured tables that the tool will identify. 
 
 6. In addition you can run the unit tests locally with 
 ```bash
@@ -129,13 +169,13 @@ This environment variable sets the threshold for identifying columns that are ra
 Purpose: Columns that are mostly unused or contain a high percentage of null values might indicate design inefficiencies in the database schema. Identifying such columns can help database administrators and developers review and possibly refactor their schema for better efficiency.
 Usage: The UNUSED_COLUMN_PERCENTAGE_THRESHOLD value of 5 means that if a column has non-null values in less than 5% of its rows, the tool will flag this column as being rarely used or mostly null, suggesting a review to determine if it can be removed or its usage optimised.
 
-### Contributing
+## Contributing
 Contributions are welcome! Just send a pull request.
 
-### License
+## License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-### Acknowledgments
+## Acknowledgments
 This utility was designed to assist database administrators and developers in optimising their PostgreSQL databases for better performance and efficiency.
 
 ### Disclaimer
