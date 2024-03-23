@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 import { startServer } from './web'; // Assume this starts your express server

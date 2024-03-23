@@ -1,18 +1,22 @@
-const { runAllAnalyses } = require('./analysesRunner'); 
-const { getPool, setupDatabase } = require('./utils/dbClient');
-const { CliArgs } = require('./types/cliArgs');
+import { runAllAnalyses } from './analysesRunner'; 
+import { getPool, setupDatabase } from './utils/dbClient';
+import { CliArgs } from './types/cliArgs';
+import { formatResultsForCLI } from './utils/formatResults';
 
-export function runCliAnalysis(cliArgs: typeof CliArgs) {
-  const dbConfig = {
-    host: cliArgs.dbHost,
-    user: cliArgs.dbUser,
-    password: cliArgs.dbPassword,
-    database: cliArgs.dbName,
-    port: cliArgs.dbPort,
-  };
+export async function runCliAnalysis(cliArgs: CliArgs) {
 
-  setupDatabase(dbConfig);
+  setupDatabase(cliArgs);
   const pool = getPool();
 
-  // Run analyses and output results to CLI...
+  try {
+
+    const results = await runAllAnalyses(pool);
+    const formattedResults = formatResultsForCLI(results);
+    console.log(formattedResults);
+
+  } catch (error) {
+    console.error(`Error running CLI analysis: ${error}`);
+  } finally {
+    await pool.end();
+  }
 };

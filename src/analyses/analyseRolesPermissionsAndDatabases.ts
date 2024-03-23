@@ -48,11 +48,10 @@ export async function analyseRolesPermissionsAndDatabases(pool: Pool): Promise<A
       const permissionsRes = await pool.query(queryPermissions, [role.rolname]);
       const accessibleDbs = dbRes.rows.map(row => row.datname).join(', ');
 
-      let roleMessage = `
-      Role: ${role.rolname}\n
-      Attributes: Superuser: ${role.rolsuper}, Can Login: ${role.rolcanlogin}\n
-      Accessible Databases: ${accessibleDbs || 'None'}
-      `.trim();
+      let roleMessage = `Role: ${role.rolname}` +
+      `\n- Attributes: Superuser: ${role.rolsuper}, Can Login: ${role.rolcanlogin}` +
+      `\n- Accessible Databases: ${accessibleDbs || 'None'}`;
+
       
       if (permissionsRes.rows.length > 0) {
         let permissionsText = permissionsRes.rows.map(({ schema, object, type, privileges }) => {

@@ -31,14 +31,13 @@ export async function analysePasswordPolicy(pool: Pool): Promise<AnalysisResult>
     }
 
     // Additional Recommendations
-    let recommendationsText = `
-    Additional Recommendations for Password Policy:\n
-    - Enforce minimum password lengths of at least 12 characters.\n
-    - Require a mix of uppercase letters, lowercase letters, numbers, and special characters in passwords.\n
-    - Implement account lockout policies after several failed login attempts to protect against brute-force attacks.\n
-    - Encourage or enforce periodic password changes, balancing this with the risk of users opting for weaker passwords.\n
-    - Review and manually check the pg_hba.conf file for custom password authentication configurations, such as those using PAM (Pluggable Authentication Modules).
-    `.trim(); 
+    let recommendationsText = `Additional Recommendations for Password Policy:` +
+    `\n- Enforce minimum password lengths of at least 12 characters.` +
+    `\n- Require a mix of uppercase letters, lowercase letters, numbers, and special characters in passwords.` +
+    `\n- Implement account lockout policies after several failed login attempts to protect against brute-force attacks.` +
+    `\n- Encourage or enforce periodic password changes, balancing this with the risk of users opting for weaker passwords.` +
+    `\n- Review and manually check the pg_hba.conf file for custom password authentication configurations, such as those using PAM (Pluggable Authentication Modules).`;
+
     
     result.messages.push({
       text: recommendationsText,

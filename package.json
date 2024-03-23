@@ -1,14 +1,30 @@
 {
   "name": "pg_analyser",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "1.1.0",
+  "description": "A powerful PostgreSQL analysis tool for optimizing database performance, security, and configuration.",
+  "main": "dist/src/main.js",
+  "bin": {
+    "pg-analyser": "./dist/src/main.js"
+  },
   "scripts": {
     "test": "npx jest",
     "build": "tsc"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "database-analysis",
+    "performance-optimization",
+    "security-analysis",
+    "database-configuration",
+    "cli-tool",
+    "db-admin-tools",
+    "postgresql-utilities",
+    "ci-cd-integration",
+    "database-maintenance",
+    "sql-analysis"
+  ],
+  "author": "Radical Geek - Mark Jones",
   "license": "ISC",
   "devDependencies": {
     "@types/body-parser": "^1.19.5",
